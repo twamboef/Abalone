@@ -29,7 +29,6 @@ public class Abalone {
 			System.out.println("Player 4, what is your name?");
 			player4 = scanner.nextLine();
 		}
-		scanner.close();
 		Player p1,p2,p3,p4;
 		Game game;
 		p1 = new HumanPlayer(player1,Marble.WHITE);
