@@ -26,14 +26,14 @@ public class HumanPlayer extends Player {
 		String result = input;
 		while (marblesplit.length != 2) {
 			System.out.println("> Please try again.\n  Format: CHARACTER,INTEGER or INTEGER,CHARACTER\n  e.g. A,1 or 1,A");
-			result = makeGoodFormat(scanner.nextLine());
+			result = makeGoodFormat(scanner.nextLine().toUpperCase());
 			marblesplit = result.split(",");
 		}
 		while (true) {
 			try {		
 				while (board.getMarble(marblesplit[1].charAt(0),Integer.parseInt(marblesplit[0])) != getMarble()) {
 					System.out.println("> This is not one of your marbles, please try again");
-					result = makeGoodFormat(scanner.nextLine());
+					result = makeGoodFormat(scanner.nextLine().toUpperCase());
 					marblesplit = result.split(",");
 				}
 				break;
@@ -52,7 +52,8 @@ public class HumanPlayer extends Player {
 		String marble1;
 		while(true) {
 			try {
-				marble1 = makeGoodFormat(scanner.nextLine());
+				System.out.println();
+				marble1 = makeGoodFormat(scanner.nextLine().toUpperCase());
 				break;
 			}
 			catch (ArrayIndexOutOfBoundsException e) {
@@ -64,7 +65,7 @@ public class HumanPlayer extends Player {
 		String marble2;
 		while(true) {
 			try {
-				marble2 = makeGoodFormat(scanner.nextLine());
+				marble2 = makeGoodFormat(scanner.nextLine().toUpperCase());
 				break;
 			}
 			catch (ArrayIndexOutOfBoundsException e) {
