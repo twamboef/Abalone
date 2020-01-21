@@ -5,7 +5,6 @@ public class Game {
 	private Board board;
 	private Player[] players;
 	private int current,turnCount;
-	private Player winner;
 	/**
 	 * Creates game for 2 players
 	 * @param p1 player 1
@@ -96,7 +95,10 @@ public class Game {
 		}
 		return false;
 	}
-	
+	/**
+	 * @ensures result != null
+	 * @return result of game (winner or draw)
+	 */
 	public void printResult() {
 		for (Player p : players) {
 			if (board.getPlayers() != 4 && p.getPoints() >= 6) {
