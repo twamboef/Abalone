@@ -7,7 +7,10 @@ public class Board {
 	public static final String ENTER = "\n";
 	public static final String LBORDER = "/";
 	public static final String RBORDER = "\\";
-	public static final String BORDER = "+---+---+---+---+";	
+	public static final String UBORDER = 
+			"\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F";
+	public static final String BBORDER = 
+			"\u203E1\u203E\u203E\u203E2\u203E\u203E\u203E3\u203E\u203E\u203E4\u203E\u203E\u203E5";	
 	char[] horizontal = "ABCDEFGHI".toCharArray();
 	int[] diagonal = {1,2,3,4,5,6,7,8,9};
 	private Marble[] fields;
@@ -18,6 +21,13 @@ public class Board {
 		this.players = players;
 		reset();
 	}
+	
+	public Board deepCopy() {
+		Board copy = new Board(players);
+		for (int i=0; i<size; i++) copy.setField(i, this.getMarble(i));
+		return copy;
+	}
+	
 	/**
 	 * @ensures valid index returned
 	 * @returns index if valid, -1 if invalid
@@ -34,7 +44,7 @@ public class Board {
 			}
 		}
 		else {
-			result = size-(9-dia); //61-(13-6-2)=56 56-(5-1)-(5)=56
+			result = size-(9-dia);
 			for (int i=index; i < horizontal.length-1; i++) {
 				result -= 9 - (i-3);
 			}
@@ -43,23 +53,23 @@ public class Board {
 	}
 	
 	public String getCoords(int i) {
-		if (i < 6) return "A," + i;
-		else if (i < 12) return "B," + (i-5);
-		else if (i < 19) return "C," + (i-11);
-		else if (i < 27) return "D," + (i-18);
-		else if (i < 36) return "E," + (i-26+1);
-		else if (i < 44) return "F," + (i-35+2);
-		else if (i < 51) return "G," + (i-43+3);
-		else if (i < 57) return "H," + (i-50+4);
+		if (i < 5) return "A," + (i+1);
+		else if (i < 11) return "B," + (i-4);
+		else if (i < 18) return "C," + (i-10);
+		else if (i < 26) return "D," + (i-17);
+		else if (i < 35) return "E," + (i-26+1);
+		else if (i < 43) return "F," + (i-35+2);
+		else if (i < 50) return "G," + (i-43+3);
+		else if (i < 56) return "H," + (i-50+4);
 		else return "I," + (i-56+5);
 	}
 	
 	public Marble getMarble(int index) {
-		return fields[index];
+		return (index != -1) ? fields[index] : null;
 	}
 	
 	public Marble getMarble(char hor, int dia) {
-		return fields[getIndex(hor,dia)];
+		return getMarble(getIndex(hor, dia));
 	}
 	
 	public String getRep(Marble m) {
@@ -123,11 +133,6 @@ public class Board {
 	public boolean isEmptyField(char hor, int dia) {
 		return fields[getIndex(hor,dia)] == Marble.EMPTY;
 	}
-	
-//	public boolean gameOver() {
-//		//TODO players gain points when pushing off other marbles
-//		//with 2/3 players, any player needs 6 points. with 4 players, black+white needs 6 points or red+blue needs 6 points.
-//	}
 	
 	public void reset() {
 		if (players == 2) {
@@ -202,87 +207,46 @@ public class Board {
 				if (fields[i] == null) fields[i] = Marble.EMPTY;
 			}
 		}
+		else {
+			for (int i=0; i < size; i++) {
+				fields[i] = Marble.EMPTY;
+			}
+		}
 	}
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (int i=0; i<5; i++) {
+		int index = 0;
+		int max;
+		String line = "";
+		for (int i=0; i<6; i++) {
 			sb.append(SPACE);
 		}
-		sb.append(BORDER + ENTER);
-		for (int i=0; i<4; i++) {//ROW 1
-			sb.append(SPACE);
+		sb.append(BBORDER);
+		for (int i=0; i < 9; i++) {
+			line = "";
+			for (int j=0; j < Math.abs(i-4); j++) line += SPACE;
+			line += horizontal[i] + " ";
+			if (i<4) line += RBORDER;
+			else if (i == 4) line += LINE;
+			else line += LBORDER;
+			for (int j=0; j < (max = 9 - Math.abs(i-4)); j++) {
+				line += getRep(getMarble(index));
+				index++;
+				if (j < max - 1) line += LINE;
+			}
+			if (i<4) line += LBORDER + " " + (i+6);
+			else if (i == 4) line += LINE;
+			else line += RBORDER;
+			line += ENTER;
+			sb.insert(0,line);
 		}
-		sb.append(LBORDER);
-		for (int i=56; i<61; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 60) sb.append(LINE);
+		line = "";
+		for (int i=0; i<15; i++) {
+			line += SPACE;
 		}
-		sb.append(RBORDER + ENTER);
-		for (int i=0; i<3; i++) {//ROW 2
-			sb.append(SPACE);
-		}
-		sb.append(LBORDER);
-		for (int i=50; i<56; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 55) sb.append(LINE);
-		}
-		sb.append(RBORDER + ENTER + SPACE + SPACE + LBORDER);//ROW 3
-		for (int i=43; i<50; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 49) sb.append(LINE);
-		}
-		sb.append(RBORDER + ENTER + SPACE + LBORDER);//ROW 4
-		for (int i=35; i<43; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 42) sb.append(LINE);
-		}
-		sb.append(RBORDER + ENTER + LINE);//ROW 5
-		for (int i=26; i<35; i++) {
-			sb.append(getRep(getMarble(i)));
-			sb.append(LINE);
-		}
-		sb.append(ENTER + SPACE + RBORDER);//ROW 6
-		for (int i=18; i<26; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 25) sb.append(LINE);
-		}
-		sb.append(LBORDER + ENTER + SPACE + SPACE + RBORDER);//ROW 7
-		for (int i=11; i<18; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 17) sb.append(LINE);
-		}
-		sb.append(LBORDER + ENTER);//ROW 8
-		for (int i=0; i<3; i++) {
-			sb.append(SPACE);
-		}
-		sb.append(RBORDER);
-		for (int i=5; i<11; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 10) sb.append(LINE);
-		}
-		sb.append(LBORDER + ENTER);
-		for (int i=0; i<4; i++) {//ROW 9
-			sb.append(SPACE);
-		}
-		sb.append(RBORDER);
-		for (int i=0; i<5; i++) {
-			sb.append(getRep(getMarble(i)));
-			if (i < 4) sb.append(LINE);
-		}
-		sb.append(LBORDER + ENTER);
-		for (int i=0; i<5; i++) {
-			sb.append(SPACE);
-		}
-		sb.append(BORDER);
+		line += UBORDER + ENTER;
+		sb.insert(0, line);
 		return sb.toString();
-	}
-	public static void main(String[] args) {
-		Board board2 = new Board(2);
-		Board board3 = new Board(3);
-		Board board4 = new Board(4);
-		System.out.println(board2.toString() + "\n\n");
-		System.out.println(board3.toString() + "\n\n");
-		System.out.println(board4.toString());
-	}
+	}	
 }
