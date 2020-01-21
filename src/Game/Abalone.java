@@ -43,5 +43,6 @@ public class Abalone {
 		if (players == 3) game = new Game(p1,p2,p3);
 		else if (players == 4) game = new Game(p1,p2,p3,p4);
 		game.start();
+		scanner.close();
 	}
 }

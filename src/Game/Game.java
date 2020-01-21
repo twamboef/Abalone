@@ -4,7 +4,7 @@ public class Game {
 	public static int NUMBER_PLAYERS = 2;
 	private Board board;
 	private Player[] players;
-	private int current;
+	private int current,turnCount;
 	/**
 	 * Creates game for 2 players
 	 * @param p1 player 1
@@ -49,6 +49,7 @@ public class Game {
 	    players[2] = p3;
 	    players[3] = p4;
 		current = 0;
+		turnCount = 0;
 	}
 	/**
 	 * Initialises the game
@@ -57,6 +58,7 @@ public class Game {
 	public void start() {
 		board.reset();
 		play();
+		printResult();
 	}
 	/**
 	 * Plays the game until finished
@@ -64,11 +66,12 @@ public class Game {
 	 */
 	public void play() {
 		System.out.println(board.toString());
-		while (!gameOver()) {
+		while (!gameOver() && turnCount < 96) {
 			players[current].makeMove(board);
 			for (Player p : players) System.out.println(p.getName() + "'s points: " + p.getPoints());
 			System.out.println(board.toString());
 			current++;
+			turnCount++;
 			if (current >= players.length) current = 0;
 		}
 			
@@ -91,5 +94,28 @@ public class Game {
 			}
 		}
 		return false;
+	}
+	/**
+	 * @ensures result != null
+	 * @return result of game (winner or draw)
+	 */
+	public void printResult() {
+		for (Player p : players) {
+			if (board.getPlayers() != 4 && p.getPoints() >= 6) {
+				System.out.println("Player " + p.getName() + " won!");
+				return;
+			}
+			else if (board.getPlayers() == 4) {
+				for (Player ps : players) {
+					if (ps.getMarble() == p.getMarble().next(4).next(4)) {
+						if (p.getPoints() + ps.getPoints() >= 6) {
+							System.out.println("Team " + p.getName() + " and " + ps.getName() + " won!");
+							return;
+						}
+					}
+				}
+			}
+			System.out.println("It's a draw!");
+		}
 	}
 }
