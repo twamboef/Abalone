@@ -52,7 +52,8 @@ public class HumanPlayer extends Player {
 		String marble1;
 		while(true) {
 			try {
-				marble1 = makeGoodFormat(scanner.nextLine());
+				System.out.println();
+				marble1 = makeGoodFormat(scanner.nextLine().toUpperCase());
 				break;
 			}
 			catch (ArrayIndexOutOfBoundsException e) {
@@ -64,7 +65,7 @@ public class HumanPlayer extends Player {
 		String marble2;
 		while(true) {
 			try {
-				marble2 = makeGoodFormat(scanner.nextLine());
+				marble2 = makeGoodFormat(scanner.nextLine().toUpperCase());
 				break;
 			}
 			catch (ArrayIndexOutOfBoundsException e) {
