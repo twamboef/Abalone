@@ -28,6 +28,17 @@ public class Board {
 		return copy;
 	}
 	
+	public int getNRofMarbles(Marble) {
+		for(int i = 0; i < 61; i++) {
+			int j = 0;
+			if(getMarble(i) == Marble) {
+				j++;
+			}
+		}	
+		return j;
+	}
+	
+	
 	/**
 	 * @ensures valid index returned
 	 * @returns index if valid, -1 if invalid
