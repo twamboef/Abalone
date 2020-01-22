@@ -13,19 +13,20 @@ public class SmartAI implements Strategy {
 				empty.add(i);
 			}
 		}
-		
 		Board copy = board.deepCopy();
-		List<Integer> middle = new ArrayList<Integer>();
-		middle.add(22);
-		middle.add(23);
-		middle.add(30);
-		middle.add(31);
-		middle.add(32);
-		middle.add(39);
-		middle.add(40);
-		empty.retainAll(middle);
+		
+		//make a random move 
+		int marble1 = empty.get((int) (Math.random()*empty.size()));
+		int marble2 = empty.get((int) (Math.random()*empty.size()));
+		int dir = empty.get((int) (Math.random());
 		
 		
-		return null;
+		String move = marble1 + ";" + marble2 + ";" + dir;
+		return move;
+		
+		
+		if (isValidMove(copy, move) {
+			
+		}
 	}
 }
