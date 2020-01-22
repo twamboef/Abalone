@@ -15,22 +15,32 @@ public class Board {
 	int[] diagonal = {1,2,3,4,5,6,7,8,9};
 	private Marble[] fields;
 	public int players;
-	
+	/**
+	 * Constructor of the class
+	 * @param amount of players
+	 * @ensures fields != null
+	 */
 	public Board(int players) {
 		fields = new Marble[size];
 		this.players = players;
 		reset();
 	}
-	
+	/**
+     * Creates a deep copy of the board
+     * @ensures new object (not this object)
+     * @ensures the values of all fields of the copy match the ones of this board
+     * @return copy of this board
+     */
 	public Board deepCopy() {
 		Board copy = new Board(players);
 		for (int i=0; i<size; i++) copy.setField(i, this.getMarble(i));
 		return copy;
 	}
-	
 	/**
-	 * @ensures valid index returned
-	 * @returns index if valid, -1 if invalid
+	 * Converts a combination of horizontal and diagonal coordinate to index
+	 * @ensures result == -1 || fields[result] != null
+	 * @return index if valid
+	 * @return -1 if invalid
 	 * @param players
 	 */
 	public int getIndex(char hor, int dia) {
@@ -51,7 +61,12 @@ public class Board {
 		}
 		return result-1;
 	}
-	
+	/**
+	 * Converts an index to a combination of a horizontal and diagonal coordinate
+	 * @param index i 
+	 * @return String with coordinates if index is valid
+	 * @return null if invalid
+	 */
 	public String getCoords(int i) {
 		if (i < 5) return "A," + (i+1);
 		else if (i < 11) return "B," + (i-4);
@@ -61,17 +76,36 @@ public class Board {
 		else if (i < 43) return "F," + (i-35+2);
 		else if (i < 50) return "G," + (i-43+3);
 		else if (i < 56) return "H," + (i-50+4);
-		else return "I," + (i-56+5);
+		else if (i < 61) return "I," + (i-56+5);
+		else return null;
 	}
-	
+	/**
+	 * Returns the marble on the field given
+	 * @param index of which to get the marble
+	 * @return marble if valid index
+	 * @return null if invalid index
+	 */
 	public Marble getMarble(int index) {
 		return (index != -1) ? fields[index] : null;
 	}
-	
+	/**
+	 * Returns the marble of the field given
+	 * Uses getMarble(int index) and getIndex(hor, dia)
+	 * @param hor Horizontal coordinate (A-I)
+	 * @param dia Diagonal coordinate (1-9)
+	 * @return marble if valid index
+	 * @return null if invalid index
+	 */
 	public Marble getMarble(char hor, int dia) {
 		return getMarble(getIndex(hor, dia));
 	}
-	
+	/**
+	 * Returns representation of marbles and empty field
+	 * @param m Marble of which to get representation
+	 * @ensures result != null
+	 * @return 3-letter representation of marble if field not empty
+	 * @return "   " if field is empty
+	 */
 	public String getRep(Marble m) {
 		if (m == Marble.WHITE) return "WHI";
 		else if (m == Marble.BLACK) return "BLK";
@@ -79,23 +113,46 @@ public class Board {
 		else if (m == Marble.RED) return "RED";
 		else return "   ";
 	}
-	
+	/**
+	 * Returns the amount of players on this board
+	 * @return players
+	 */
 	public int getPlayers() {
 		return players;
 	}
-	
+	/**
+	 * Sets the amount of players for this board
+	 * @param players new amount of players for this board
+	 */
 	public void setPlayers(int players) {
 		this.players = players;
 	}
-	
+	/**
+	 * Changes the marble of field i
+	 * @requires i to be a valid index
+	 * @param i index of the field
+	 * @param m new marble for this field
+	 * @ensures field i is set to marble m
+	 */
 	public void setField(int i, Marble m) {
 		fields[i] = m;
 	}
-	
+	/**
+	 * Changes the marble of field (hor,dia)
+	 * @requires (hor,dia) to be a valid coordinate
+	 * @param hor Horizontal coordinate (A-I)
+	 * @param dia Diagonal coordinate (1-9)
+	 * @param m new marble for this field
+	 * @ensures field (hor,dia) is set to marble m
+	 */
 	public void setField(char hor, int dia, Marble m) {
 		fields[getIndex(hor,dia)] = m;
 	}
-	
+	/**
+	 * Checks whether hor is a valid horizontal coordinate
+	 * @param hor horizontal coordinate
+	 * @return boolean if hor is a valid horizontal coordinate
+	 */
 	public boolean isValidHorizontal(char hor) {
 		for (int i=0; i < horizontal.length; i++) {
 			if (horizontal[i] == hor) {
@@ -132,6 +189,90 @@ public class Board {
 	
 	public boolean isEmptyField(char hor, int dia) {
 		return fields[getIndex(hor,dia)] == Marble.EMPTY;
+	}
+	
+	public boolean isValidMove(Player player, String move) {
+		int tempscore = player.getPoints();
+		Marble marble = player.getMarble();
+		Board copy = deepCopy();
+		String[] movesplit = move.split(";");
+		String[] first, last;
+		char firsthor ,lasthor;
+		int firstdiai,lastdiai,dirvalue;
+		Direction dir;
+		try {
+			first = movesplit[0].split(",");
+			last = movesplit[1].split(",");
+			firsthor = first[1].charAt(0);
+			lasthor = last[1].charAt(0);
+			firstdiai = Integer.parseInt(first[0]);
+			lastdiai = Integer.parseInt(last[0]);
+			dirvalue = Integer.parseInt(movesplit[2]);
+			dir = Direction.values()[dirvalue];
+		}
+		catch (Exception e) {
+			return false;
+		}
+		try {
+			boolean hasThree = false;
+			int ball2 = -1;
+			Marble teamMate = marble.next(4).next(4);
+			for (int i = 0; i<6 && !hasThree; i++) { //test if moving three balls
+				if (player.marbleTo(copy, (ball2 = player.marbleTo(copy,lasthor,lastdiai,Direction.values()[i])),Direction.values()[i]) == getIndex(firsthor,firstdiai))
+					hasThree = true;
+			}
+			if (copy.getMarble(firsthor,firstdiai) != marble) {
+				if (copy.getPlayers() != 4) return false;
+				else if (copy.getMarble(firsthor,firstdiai) != teamMate) return false;
+			}
+			if (copy.getMarble(lasthor, lastdiai) != marble) {
+				if (copy.getPlayers() != 4) return false;
+				else if (copy.getMarble(lasthor,lastdiai) != teamMate) return false;//copy part checks whether all selected
+			}																		//marbles are of the player's team
+			if (copy.getPlayers() == 4 && copy.getMarble(firsthor,firstdiai) != marble
+					&& copy.getMarble(lasthor,lastdiai) != marble) {
+				if (!hasThree) return false;
+				else if (copy.getMarble(ball2) != marble) return false;//1+ of the moving marbles has to be player's marble
+			}
+			if (hasThree) {
+				if (copy.getMarble(ball2) != marble) {
+					if (copy.getPlayers() != 4) return false;
+					else if (copy.getMarble(ball2) != teamMate) return false;
+				}
+			}
+			if (player.isInLine(copy,move)) {
+				if (getMarble(lasthor, lastdiai) != marble) return false;
+				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) return true;
+				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == marble) return false;
+				if (copy.getPlayers() == 4) {
+					if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == teamMate) return false;
+				}
+				int upTwoi = player.marbleTo(copy,player.marbleTo(copy,firsthor,firstdiai,dir),dir);
+				Marble upTwo = getMarble(upTwoi);
+				Marble upThree = getMarble(player.marbleTo(copy,upTwoi,dir));
+				if (upTwo != null && upTwo != Marble.EMPTY) {
+					if (!hasThree) return false;
+					if (upThree != null && upThree != Marble.EMPTY) return false;
+				}
+				if (hasThree) {
+					if (upTwo == marble) return false;
+					if (copy.getPlayers() == 4 && upTwo == teamMate) return false;
+				}
+			}
+			else {
+				if (copy.getMarble(player.marbleTo(copy,firsthor,firstdiai,dir)) != Marble.EMPTY
+						|| copy.getMarble(player.marbleTo(copy,lasthor,lastdiai,dir)) != Marble.EMPTY) return false;
+				if (hasThree && copy.getMarble(player.marbleTo(copy,ball2,dir)) != Marble.EMPTY) return false;
+			}
+			player.setFields(copy,move);
+		}
+		catch (ArrayIndexOutOfBoundsException e) {
+			return false;
+		}
+		finally {
+			player.setPoints(tempscore);
+		}
+		return true;
 	}
 	
 	public void reset() {

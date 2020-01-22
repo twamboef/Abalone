@@ -115,7 +115,7 @@ public class Game {
 					}
 				}
 			}
-			System.out.println("It's a draw!");
+			System.out.println("96 turns have passed. It's a draw!");
 		}
 	}
 }
