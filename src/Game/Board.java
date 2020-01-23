@@ -86,7 +86,7 @@ public class Board {
 	 * @return null if invalid index
 	 */
 	public Marble getMarble(int index) {
-		return (index != -1) ? fields[index] : null;
+		return (index >= 0 && index < 61) ? fields[index] : null;
 	}
 	/**
 	 * Returns the marble of the field given
@@ -267,6 +267,7 @@ public class Board {
 			player.setFields(copy,move);
 		}
 		catch (ArrayIndexOutOfBoundsException e) {
+			e.printStackTrace();
 			return false;
 		}
 		finally {
@@ -389,5 +390,5 @@ public class Board {
 		line += UBORDER + ENTER;
 		sb.insert(0, line);
 		return sb.toString();
-	}	
+	}
 }
