@@ -199,7 +199,7 @@ public class Board {
 	 * @return boolean if valid field
 	 */
 	public boolean isValidField(int index) {
-		return index <= size && index >= 0;
+		return index < size && index >= 0;
 	}
 	/**
 	 * Checks whether the coordinates represent a field on the board

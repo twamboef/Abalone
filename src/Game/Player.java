@@ -113,24 +113,30 @@ public abstract class Player {
 		if (isInLine(board,move)) {
 			int upTwo = 100, upThree = 100;
 			int toMarblei;
-			if ((toMarble = board.getMarble((toMarblei = marbleTo(board,firsthor,firstdiai,dir)))) == Marble.EMPTY) {//first marble is leading
+			if ((toMarble = board.getMarble((toMarblei = marbleTo(board,firsthor,firstdiai,dir)))) == Marble.EMPTY) {
 				board.setField(toMarblei, board.getMarble(firsthor,firstdiai));
 				board.setField(firsthor,firstdiai, board.getMarble(ball2));
 				board.setField(ball2, marble);
 				board.setField(board.getIndex(lasthor,lastdiai), Marble.EMPTY);
 			}
 			else  { //if bumping into another player
-				upTwo = marbleTo(board,toMarblei,dir);
-				upThree = marbleTo(board,upTwo,dir);
-				board.setField(toMarblei, board.getMarble(firsthor,firstdiai));
-				board.setField(firsthor,firstdiai, board.getMarble(ball2));
-				board.setField(ball2, marble);
-				board.setField(board.getIndex(lasthor,lastdiai), Marble.EMPTY);
-				if (upTwo == -1) points++;
-				else if (upThree == -1) {
-					board.setField(upTwo, toMarble);
+				upTwo = marbleTo(board, toMarblei, dir);
+				upThree = marbleTo(board, upTwo, dir);
+				if (!board.isValidField(upTwo)) points++;
+				else if (board.getMarble(upTwo) != Marble.EMPTY && !board.isValidField(upThree)) {
 					points++;
 				}
+				upTwo = marbleTo(board,toMarblei,dir);
+				upThree = marbleTo(board,upTwo,dir);
+				if (upThree != -1) board.setField(upThree, board.getMarble(upTwo));
+				if (upTwo != -1) board.setField(upTwo, toMarble);
+				board.setField(toMarblei, board.getMarble(firsthor,firstdiai));
+				if (hasThree) {
+					board.setField(firsthor,firstdiai, board.getMarble(ball2));
+					board.setField(ball2, board.getMarble(lasthor,lastdiai));
+				}
+				else board.setField(firsthor, firstdiai, board.getMarble(lasthor, lastdiai));
+				board.setField(board.getIndex(lasthor,lastdiai), Marble.EMPTY);
 			}
 		}
 		else {
