@@ -58,6 +58,13 @@ public class Lobby {
 		return players.size() == size;
 	}
 	
+	public boolean containsPlayer(String name) {
+		for (String p : players) {
+			if (p.equals(name)) return true;
+		}
+		return false;
+	}
+	
 	public void ready() {
 		readyAmount++;
 	}

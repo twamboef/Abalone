@@ -24,13 +24,26 @@ public class Server implements Runnable, ServerProtocol {
 
 	}
 	
-	private boolean isConnected(String name) {
+	public ClientHandler getClient(String name) {
 		for (ClientHandler client : clients) {
-			if (client.getName() == name) return true;
+			if (client.getName().equals(name)) return client;
 		}
-		return false;
+		return null;
 	}
-
+	
+	public Lobby getLobby(String name) {
+		for (Lobby lobby : lobbies) {
+			for (String player : lobby.getPlayers()) {
+				if (player.equals(name)) return lobby;
+			}
+		}
+		return null;
+	}
+	
+	private boolean isInLobby(String name) {
+		return getClient(name).isInLobby();
+	}
+	
 	@Override
 	public String getConnect(String name) {
 		for (ClientHandler client : clients) {
@@ -42,7 +55,6 @@ public class Server implements Runnable, ServerProtocol {
 
 	@Override
 	public String createLobby(String name, int size) {
-		if (!isConnected(name))
 		for (Lobby lobby : lobbies) {
 			if (lobby.getName().equals(name) || size < 2 || size > 4) return "CREATE_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 		}
@@ -61,9 +73,8 @@ public class Server implements Runnable, ServerProtocol {
 
 	@Override
 	public String joinLobby(String name, String lobbyname) {
-		
 		for (Lobby lobby : lobbies) {
-			if (lobby.getName().equals(lobbyname) && lobby.isJoinable()) {
+			if (lobby.getName().equals(lobbyname) && lobby.isJoinable() && !isInLobby(name)) {
 				lobby.join(name);
 				return "JOIN_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
 			}
@@ -86,20 +97,20 @@ public class Server implements Runnable, ServerProtocol {
 
 	@Override
 	public String doReady(String name) {
-		for (ClientHandler client : clients) {
-			if (client.getName() == name && client.isInLobby() && !client.isReady()) {
-				return "READY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
-			}
+		ClientHandler client = getClient(name);
+		if (client.isInLobby() && !client.isReady()) {
+			client.ready();
+			return "READY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
 		}
 		return "READY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
 	public String doUnready(String name) {
-		for (ClientHandler client : clients) {
-			if (client.getName() == name && client.isInLobby() && client.isReady()) {
-				return "UNREADY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
-			}
+		ClientHandler client = getClient(name);
+		if (client.isInLobby() && client.isReady()) {
+			client.unready();
+			return "UNREADY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
 		}
 		return "UNREADY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
@@ -117,9 +128,79 @@ public class Server implements Runnable, ServerProtocol {
 		for (String p : lobby.getPlayers()) result += p + ProtocolMessages.DELIMITER;
 		return result;
 	}
+	//TODO vanaf hier
+	@Override
+	public String makeMove(String name, String move) {
+		return "MOVE" + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER;
+	}
 
 	@Override
-	public String makeMove(Game game, String move) {
-		return "MOVE" + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER;
+	public String gameFinish(Game game) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String playerDefeat(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String playerForfeit(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getServerList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String challengePlayer(String challenger, String target) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String challengeAccept(String accepter, String challenger) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String sendPM(String sender, String receiver, String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String receivePM(String receiver, String sender, String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String sendLM(String sender, String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String receiveLM(String sender, String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getLeaderboard() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public void removeClient(ClientHandler client) {
+		clients.remove(client);
 	}
 }

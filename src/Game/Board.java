@@ -36,6 +36,11 @@ public class Board {
 		for (int i=0; i<size; i++) copy.setField(i, this.getMarble(i));
 		return copy;
 	}
+	/**
+	 * Calculates how many marbles a player has on the board
+	 * @param marble the marble of the player
+	 * @return amount of marbles of this player that have not been pushed off
+	 */
 	public int getNRofMarbles(Marble marble) {
 		int j = 0;
 		for(int i = 0; i < 61; i++) {
@@ -44,9 +49,7 @@ public class Board {
 			}
 		}	
 		return j;
-	}
-	
-	
+	}	
 	/**
 	 * Converts a combination of horizontal and diagonal coordinate to index
 	 * @ensures result == -1 || fields[result] != null
@@ -172,7 +175,12 @@ public class Board {
 		}
 		return false;
 	}
-	
+	/**
+	 * Checks whether dia is a valid diagonal coordinate
+	 * @param hor horizontal coordinate (needed because each row has a different amount of valid diagonals)
+	 * @param dia diagonal coordinate
+	 * @return boolean if dia is a valid diagonal coordinate
+	 */
 	public boolean isValidDiagonal(char hor, int dia) {
 		int index = new String(horizontal).indexOf(hor);
 		if (index == -1) {
@@ -185,23 +193,48 @@ public class Board {
 			return dia >= index - 3 && dia <= 9;
 		}
 	}
-	
-	public boolean isValidField(char hor, int dia) {
-		return isValidHorizontal(hor) && isValidDiagonal(hor, dia);
-	}
-	
+	/**
+	 * Checks whether the index represents a field on the board
+	 * @param index of a field
+	 * @return boolean if valid field
+	 */
 	public boolean isValidField(int index) {
 		return index <= size && index >= 0;
 	}
-	
+	/**
+	 * Checks whether the coordinates represent a field on the board
+	 * @param hor horizontal coordinate
+	 * @param dia diagonal coordinate
+	 * @return boolean if valid field
+	 */
+	public boolean isValidField(char hor, int dia) {
+		return isValidHorizontal(hor) && isValidDiagonal(hor, dia);
+	}
+	/**
+	 * Checks whether the index represents an empty field on the board
+	 * @requires isValidField(index)
+	 * @param index of a field
+	 * @return boolean if empty field
+	 */
 	public boolean isEmptyField(int index) {
-		return fields[index] == Marble.EMPTY;
+		return getMarble(index) == Marble.EMPTY;
 	}
-	
+	/**
+	 * Checks whether the coordinates represent an empty field on the board
+	 * @requires isValidField(hor,dia)
+	 * @param hor horizontal coordinate
+	 * @param dia diagonal coordinate
+	 * @return boolean if empty field
+	 */
 	public boolean isEmptyField(char hor, int dia) {
-		return fields[getIndex(hor,dia)] == Marble.EMPTY;
+		return getMarble(hor,dia) == Marble.EMPTY;
 	}
-	
+	/**
+	 * Checks whether the move is valid on this board
+	 * @param player to check it for
+	 * @param move to check for validity
+	 * @return boolean if valid move
+	 */
 	public boolean isValidMove(Player player, String move) {
 		int tempscore = player.getPoints();
 		Marble marble = player.getMarble();
@@ -286,7 +319,11 @@ public class Board {
 		}
 		return true;
 	}
-	
+	/**
+	 * Resets the board for the amount of players
+	 * If the amount of players is not in the range of 2-4,
+	 * all fields are set to empty
+	 */
 	public void reset() {
 		if (players == 2) {
 			for (int i = 0; i<11;i++) {
@@ -301,9 +338,6 @@ public class Board {
 			for (int i = 50; i < 61; i++) {
 				fields[i] = Marble.BLACK;
 			}
-			for (int i=0; i < size; i++) {
-				if (fields[i] == null) fields[i] = Marble.EMPTY;
-			}
 		}
 		else if (players == 3) {
 			for (int i = 0; i<11;i++) {
@@ -316,9 +350,6 @@ public class Board {
 				fields[getIndex(horizontal[i], i-2)] = Marble.WHITE;
 				fields[getIndex(horizontal[i], 8)] = Marble.BLACK;
 				fields[getIndex(horizontal[i], 9)] = Marble.BLACK;
-			}
-			for (int i=0; i < size; i++) {
-				if (fields[i] == null) fields[i] = Marble.EMPTY;
 			}
 		}
 		else if (players == 4) {
@@ -356,17 +387,15 @@ public class Board {
 			for (int i = 56; i < 60; i++) {
 				fields[i] = Marble.RED;
 			}
-			for (int i=0; i < size; i++) {
-				if (fields[i] == null) fields[i] = Marble.EMPTY;
-			}
 		}
-		else {
-			for (int i=0; i < size; i++) {
-				fields[i] = Marble.EMPTY;
-			}
+		for (int i=0; i < size; i++) {
+			if (fields[i] == null) fields[i] = Marble.EMPTY;
 		}
 	}
-	
+	/**
+	 * Gives a textual representation of the board
+	 * (Uses unicode, so might appear a little off depending on your font)
+	 */
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		int index = 0;

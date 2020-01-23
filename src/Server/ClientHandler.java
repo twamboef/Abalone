@@ -81,6 +81,13 @@ public class ClientHandler implements Runnable {
 			out.write(server.leaveLobby(name));
 			break;
 		case "READY_LOBBY":
+			out.write(server.doReady(name));
+			break;
+		case "UNREADY_LOBBY":
+			out.write(server.doUnready(name));
+			break;
+		case "MOVE":
+			List<ClientHandler> gameClients;
 			
 		default:
 			out.write(command + ProtocolMessages.DELIMITER + ProtocolMessages.NOT_FOUND + ProtocolMessages.DELIMITER);
@@ -97,6 +104,22 @@ public class ClientHandler implements Runnable {
 	
 	public boolean isReady() {
 		return ready;
+	}
+	
+	public void ready() {
+		ready = true;
+	}
+	
+	public void unready() {
+		ready = false;
+	}
+	
+	public void inLobby() {
+		inLobby = true;
+	}
+	
+	public void outLobby() {
+		inLobby = false;
 	}
 	
 	private void shutDown() {
