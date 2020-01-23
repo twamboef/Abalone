@@ -9,9 +9,6 @@ public class ComputerPlayer extends Player{
 	
 	@Override
 	public String determineMove(Board board) {
-		
-		return null;
+		return Strategy.determineMove(board, marble);
 	}
-	
-	
 }

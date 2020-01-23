@@ -36,6 +36,17 @@ public class Board {
 		for (int i=0; i<size; i++) copy.setField(i, this.getMarble(i));
 		return copy;
 	}
+	public int getNRofMarbles(Marble marble) {
+		int j = 0;
+		for(int i = 0; i < 61; i++) {
+			if(getMarble(i) == marble) {
+				j++;
+			}
+		}	
+		return j;
+	}
+	
+	
 	/**
 	 * Converts a combination of horizontal and diagonal coordinate to index
 	 * @ensures result == -1 || fields[result] != null

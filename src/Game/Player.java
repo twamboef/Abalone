@@ -2,7 +2,7 @@ package Game;
 
 public abstract class Player {
 	private String name;
-	private Marble marble;
+	protected Marble marble;
 	private int points = 0;
 	
 	public Player(String name, Marble marble) {
