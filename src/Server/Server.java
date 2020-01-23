@@ -1,27 +1,73 @@
 package Server;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 import Game.Game;
-import Game.Player;
 import Protocol.ProtocolMessages;
 import Protocol.ServerProtocol;
+import Exceptions.ExitProgram;
 
 public class Server implements Runnable, ServerProtocol {
-	
 	private ServerSocket ssock;
-	
 	private List<ClientHandler> clients;
-	
 	private ServerTUI view;
-	
 	private List<Lobby> lobbies;
+	/**
+	 * String for laziness, consisting of ";200;"
+	 */
+	private String DELSUCCESS = ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
+	
+	public Server() {
+		clients = new ArrayList<>();
+		view = new ServerTUI();
+	}
 	
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+		boolean openNewSocket = true;
+		while (openNewSocket) {
+			try {
+				setup();
+				while (true) {
+					Socket sock = ssock.accept();
+					String name = view.getString("What is your name?");
+					view.showMessage("New client [" + name + "] connected!");
+					ClientHandler handler =	new ClientHandler(sock, this, name);
+					new Thread(handler).start();
+					clients.add(handler);
+				}
+			} catch (ExitProgram e1) {
+				openNewSocket = false;
+			} catch (IOException e) {
+				System.out.println("A server IO error occurred: " + e.getMessage());
+				if (!view.getBoolean("Do you want to open a new socket?")) {
+					openNewSocket = false;
+				}
+			}
+		}
+		view.showMessage("See you later!");
+	}
+	
+	public void setup() throws ExitProgram {
+		ssock = null;
+		while (ssock == null) {
+			int port = view.getInt("What port would you like to use?");
+			try { // try to open a new ServerSocket
+				view.showMessage("Attempting to open a socket at 127.0.0.1 on port " + port + "...");
+				ssock = new ServerSocket(port, 0, InetAddress.getByName("127.0.0.1"));
+				view.showMessage("Server started at port " + port);
+			} catch (IOException e) {
+				view.showMessage("ERROR: could not create a socket at 127.0.0.1 and port " + port + ".");
+				if (!view.getBoolean("Do you want to try again?")) {
+					throw new ExitProgram("User indicated to exit the program.");
+				}
+			}
+		}
 	}
 	
 	public ClientHandler getClient(String name) {
@@ -47,24 +93,30 @@ public class Server implements Runnable, ServerProtocol {
 	@Override
 	public String getConnect(String name) {
 		for (ClientHandler client : clients) {
-			if (name == null) return "CONNECT" + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
-			if (client.getName().equals(name)) return "CONNECT" + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED + ProtocolMessages.DELIMITER;
+			if (name == null) {
+				return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
+			}
+			if (client.getName().equals(name)) {
+				return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED + ProtocolMessages.DELIMITER;
+			}
 		}
-		return "CONNECT" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER; 
+		return ProtocolMessages.CONNECT + DELSUCCESS; 
 	}
 
 	@Override
 	public String createLobby(String name, int size) {
 		for (Lobby lobby : lobbies) {
-			if (lobby.getName().equals(name) || size < 2 || size > 4) return "CREATE_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+			if (lobby.getName().equals(name) || size < 2 || size > 4) {
+				return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+			}
 		}
 		lobbies.add(new Lobby(name,size));
-		return "CREATE_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
+		return ProtocolMessages.CREATE + DELSUCCESS;
 	}
 
 	@Override
 	public String getLobbyList() {
-		String result = "LIST_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.SUCCESS;
+		String result = ProtocolMessages.LISTL + DELSUCCESS;
 		for (Lobby lobby : lobbies) {
 			if (lobby.isJoinable()) result += lobby.getName() + ProtocolMessages.COMMA + lobby.getSize() + ProtocolMessages.COMMA + lobby.getPlayers().size() + ProtocolMessages.DELIMITER;
 		}
@@ -76,10 +128,10 @@ public class Server implements Runnable, ServerProtocol {
 		for (Lobby lobby : lobbies) {
 			if (lobby.getName().equals(lobbyname) && lobby.isJoinable() && !isInLobby(name)) {
 				lobby.join(name);
-				return "JOIN_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
+				return ProtocolMessages.JOIN + DELSUCCESS;
 			}
 		}
-		return "JOIN_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+		return ProtocolMessages.JOIN + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
@@ -88,11 +140,11 @@ public class Server implements Runnable, ServerProtocol {
 			for (String player : lobby.getPlayers()) {
 				if (player.equals(name)) {
 					lobby.leave(name);
-					return "LEAVE_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER; 
+					return ProtocolMessages.LEAVE + DELSUCCESS; 
 				}
 			}
 		}
-		return "LEAVE_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+		return ProtocolMessages.LEAVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
@@ -100,9 +152,9 @@ public class Server implements Runnable, ServerProtocol {
 		ClientHandler client = getClient(name);
 		if (client.isInLobby() && !client.isReady()) {
 			client.ready();
-			return "READY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
+			return ProtocolMessages.READY + DELSUCCESS;
 		}
-		return "READY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+		return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
@@ -110,30 +162,35 @@ public class Server implements Runnable, ServerProtocol {
 		ClientHandler client = getClient(name);
 		if (client.isInLobby() && client.isReady()) {
 			client.unready();
-			return "UNREADY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
+			return ProtocolMessages.UNREADY + DELSUCCESS;
 		}
-		return "UNREADY_LOBBY" + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+		return ProtocolMessages.UNREADY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
 	public String lobbyChanged(Lobby lobby) {
-		String result = "LOBBY_CHANGE" + ProtocolMessages.DELIMITER;
+		String result = ProtocolMessages.CHANGE + ProtocolMessages.DELIMITER;
 		for (String p : lobby.getPlayers()) result += p + ProtocolMessages.DELIMITER;
 		return result;
 	}
 
 	@Override
 	public String startGame(Lobby lobby) {
-		String result = "GAME_START" + ProtocolMessages.DELIMITER;
+		String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
 		for (String p : lobby.getPlayers()) result += p + ProtocolMessages.DELIMITER;
 		return result;
 	}
-	//TODO vanaf hier
+
 	@Override
-	public String makeMove(String name, String move) {
-		return "MOVE" + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER;
+	public String makeMove() {
+		return ProtocolMessages.MOVE + DELSUCCESS;
 	}
 
+	@Override
+	public String sendMove(String name, String move) {
+		return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER;
+	}
+	//TODO from here and check parameters
 	@Override
 	public String gameFinish(Game game) {
 		// TODO Auto-generated method stub
@@ -202,5 +259,14 @@ public class Server implements Runnable, ServerProtocol {
 	
 	public void removeClient(ClientHandler client) {
 		clients.remove(client);
+	}
+	
+	/**
+	 * Start a new server
+	 */
+	public static void main(String[] args) {
+		Server server = new Server();
+		System.out.println("Starting Abalone server...");
+		new Thread(server).start();
 	}
 }

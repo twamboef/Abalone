@@ -6,8 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
-
 import Protocol.ProtocolMessages;
 
 public class ClientHandler implements Runnable {
@@ -63,32 +63,54 @@ public class ClientHandler implements Runnable {
 			return;
 		}
 		switch (command) {
-		case "CONNECT":
+		case ProtocolMessages.CONNECT:
 			String result = server.getConnect(parm1);
 			if (result.split(ProtocolMessages.DELIMITER)[1].equals("200")) connected = true;
 			out.write(result);
 			break;
-		case "CREATE_LOBBY":
+		case ProtocolMessages.CREATE:
 			out.write(server.createLobby(parm1, Integer.parseInt(parm2)));
 			break;
-		case "LIST_LOBBY":
+		case ProtocolMessages.LISTL:
 			out.write(server.getLobbyList());
 			break;
-		case "JOIN_LOBBY":
+		case ProtocolMessages.JOIN:
 			out.write(server.joinLobby(name, parm1));
 			break;
-		case "LEAVE_LOBBY":
+		case ProtocolMessages.LEAVE:
 			out.write(server.leaveLobby(name));
 			break;
-		case "READY_LOBBY":
+		case ProtocolMessages.READY:
 			out.write(server.doReady(name));
 			break;
-		case "UNREADY_LOBBY":
+		case ProtocolMessages.UNREADY:
 			out.write(server.doUnready(name));
 			break;
-		case "MOVE":
-			List<ClientHandler> gameClients;
-			
+		case ProtocolMessages.MOVE:
+			out.write(server.makeMove());
+			List<ClientHandler> gameClients = new ArrayList<ClientHandler>();
+			for (String p : server.getLobby(name).getPlayers()) {
+				gameClients.add(server.getClient(p));
+			}
+			for (ClientHandler ch : gameClients) {
+				ch.getWriter().write(server.sendMove(name, parm1));
+			}
+			break;
+		case ProtocolMessages.FORFEIT:
+			out.write(server.playerForfeit(name));
+			break;
+		case ProtocolMessages.LISTP:
+			break;
+		case ProtocolMessages.CHALL:
+			break;
+		case ProtocolMessages.CHALLACC:
+			break;
+		case ProtocolMessages.PM:
+			break;
+		case ProtocolMessages.LMSG:
+			break;
+		case ProtocolMessages.LEADERBOARD:
+			break;
 		default:
 			out.write(command + ProtocolMessages.DELIMITER + ProtocolMessages.NOT_FOUND + ProtocolMessages.DELIMITER);
 		}
@@ -114,12 +136,16 @@ public class ClientHandler implements Runnable {
 		ready = false;
 	}
 	
-	public void inLobby() {
+	public void joinLobby() {
 		inLobby = true;
 	}
 	
-	public void outLobby() {
+	public void leaveLobby() {
 		inLobby = false;
+	}
+	
+	public BufferedWriter getWriter() {
+		return out;
 	}
 	
 	private void shutDown() {

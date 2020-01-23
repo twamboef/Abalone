@@ -50,11 +50,27 @@ public class ServerTUI implements ServerView {
 				result = Integer.parseInt(consolein.readLine());
 				break;
 			} catch (NumberFormatException e) {
+				showMessage("Please enter an integer");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 		return result;
 	}
-
+	
+	@Override
+	public boolean getBoolean(String question) {
+		showMessage(question);
+		String result = "";
+		while (true) {
+			try {
+				result = consolein.readLine().toLowerCase();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (result.equals("y") || result.equals("yes")) return true;
+			if (result.equals("n") || result.equals("no")) return false;
+			showMessage("Please answer with y/yes or n/no");
+		}
+	}
 }

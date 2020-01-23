@@ -23,7 +23,9 @@ public interface ServerProtocol {
 	 
 	public abstract String startGame(Lobby lobby);
 	
-	public abstract String makeMove(String name, String move);
+	public abstract String makeMove();
+	
+	public abstract String sendMove(String name, String move);
 	
 	public abstract String gameFinish(Game game);
 	

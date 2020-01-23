@@ -21,4 +21,11 @@ public interface ServerView {
 	 * @return The written Integer.
 	 */
 	public int getInt(String question);
+	/**
+	 * Prints the question and asks the user for a yes/no answer.
+	 * 
+	 * @param question The question to show to the user
+	 * @return The user input as boolean.
+	 */
+	public boolean getBoolean(String question);
 }
