@@ -3,6 +3,7 @@ package Game;
 import java.util.Scanner;
 
 public class Abalone {
+	
 	public static void main(String[] args) {
 		int players;
 		String player1 = "",player2 = "",player3 = "",player4="";
@@ -44,5 +45,6 @@ public class Abalone {
 		else if (players == 4) game = new Game(p1,p2,p3,p4);
 		game.start();
 		scanner.close();
+		
 	}
 }

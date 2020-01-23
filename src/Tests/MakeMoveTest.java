@@ -24,13 +24,13 @@ class MakeMoveTest {
 
 	@Test
 	void testIsValidMove() {
-		assertFalse(player1.isValidMove(board2, "5,I;5,I;2"),"Enemy marble");
-		assertFalse(player1.isValidMove(board2, "1,E;1,E;2"),"Empty field");
-		assertFalse(player1.isValidMove(board2, "3,C;5,C;3"),"Move into own marbles");
-		assertFalse(player1.isValidMove(board2, "1,A;1,A;5"),"Move off field");
+		assertFalse(board2.isValidMove(player1, "5,I;5,I;2"),"Enemy marble");
+		assertFalse(board2.isValidMove(player1, "1,E;1,E;2"),"Empty field");
+		assertFalse(board2.isValidMove(player1, "3,C;5,C;3"),"Move into own marbles");
+		assertFalse(board2.isValidMove(player1, "1,A;1,A;5"),"Move off field");
 		
-		assertTrue(player1.isValidMove(board2, "3,C;5,C;1"),"Broadside move");
-		assertTrue(player1.isValidMove(board2, "3,C;3,A;0"),"InLine move to empty");
+		assertTrue(board2.isValidMove(player1, "3,C;5,C;1"),"Broadside move");
+		assertTrue(board2.isValidMove(player1, "3,C;3,A;0"),"InLine move to empty");
 		
 		
 		testpushboard.setField(1, Marble.WHITE);
@@ -38,26 +38,26 @@ class MakeMoveTest {
 		testpushboard.setField(3, Marble.BLACK);
 		testpushboard.setField(4, Marble.BLACK);
 		
-		assertFalse(player1.isValidMove(testpushboard, "3,A;2,A;2"),"2 marbles push 2");
+		assertFalse(testpushboard.isValidMove(player1, "3,A;2,A;2"),"2 marbles push 2");
 		
 		testpushboard.setField(0, Marble.WHITE);
 		
-		assertTrue(player1.isValidMove(testpushboard, "3,A;1,A;2"),"3 marbles push 2");
+		assertTrue(testpushboard.isValidMove(player1, "3,A;1,A;2"),"3 marbles push 2");
 		
 		testpushboard.setField(3, Marble.WHITE);
 		
-		assertTrue(player1.isValidMove(testpushboard, "4,A;3,A;2"),"2 marbles push 1");
-		assertFalse(player1.isValidMove(testpushboard, "4,A;4,A;2"),"1 marble pushes 1");
+		assertTrue(testpushboard.isValidMove(player1, "4,A;3,A;2"),"2 marbles push 1");
+		assertFalse(testpushboard.isValidMove(player1, "4,A;4,A;2"),"1 marble pushes 1");
 		
 		testpushboard.setPlayers(4);
 		testpushboard.setField(3, Marble.BLUE);
 		
-		assertFalse(player1.isValidMove(testpushboard,"3,A;1,A;2"),"cant push own team");
+		assertFalse(testpushboard.isValidMove(player1,"3,A;1,A;2"),"cant push own team");
 		
 		testpushboard.setField(1, Marble.BLACK);
 		testpushboard.setField(4, Marble.BLUE);
 		
-		assertTrue(player1.isValidMove(testpushboard,"3,A;1,A;2"),"teamup push");
+		assertTrue(testpushboard.isValidMove(player1,"3,A;1,A;2"),"teamup push");
 	}
 	
 	@Test

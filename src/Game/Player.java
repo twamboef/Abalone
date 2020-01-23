@@ -2,7 +2,7 @@ package Game;
 
 public abstract class Player {
 	private String name;
-	private Marble marble;
+	protected Marble marble;
 	private int points = 0;
 	
 	public Player(String name, Marble marble) {
@@ -20,6 +20,10 @@ public abstract class Player {
 	
 	public int getPoints() {
 		return points;
+	}
+	
+	public void setPoints(int points) {
+		this.points = points;
 	}
 	
 	public abstract String determineMove(Board board);
@@ -86,89 +90,6 @@ public abstract class Player {
 			move = movesplit[1] + ";" + movesplit[0] + ";" + movesplit[2];
 		}
 		return move;
-	}
-	
-	public boolean isValidMove(Board board, String move) {
-		int tempscore = getPoints();
-		Board copy = board.deepCopy();
-		String[] movesplit = move.split(";");
-		String[] first, last;
-		char firsthor ,lasthor;
-		int firstdiai,lastdiai,dirvalue;
-		Direction dir;
-		try {
-			first = movesplit[0].split(",");
-			last = movesplit[1].split(",");
-			firsthor = first[1].charAt(0);
-			lasthor = last[1].charAt(0);
-			firstdiai = Integer.parseInt(first[0]);
-			lastdiai = Integer.parseInt(last[0]);
-			dirvalue = Integer.parseInt(movesplit[2]);
-			dir = Direction.values()[dirvalue];
-		}
-		catch (Exception e) {
-			return false;
-		}
-		try {
-			boolean hasThree = false;
-			int ball2 = -1;
-			Marble teamMate = marble.next(4).next(4);
-			for (int i = 0; i<6 && !hasThree; i++) { //test if moving three balls
-				if (marbleTo(board, (ball2 = marbleTo(board,lasthor,lastdiai,Direction.values()[i])),Direction.values()[i]) == board.getIndex(firsthor,firstdiai))
-					hasThree = true;
-			}
-			if (copy.getMarble(firsthor,firstdiai) != marble) {
-				if (copy.getPlayers() != 4) return false;
-				else if (copy.getMarble(firsthor,firstdiai) != teamMate) return false;
-			}
-			if (copy.getMarble(lasthor, lastdiai) != marble) {
-				if (copy.getPlayers() != 4) return false;
-				else if (copy.getMarble(lasthor,lastdiai) != teamMate) return false;//this part checks whether all selected
-			}																		//marbles are of the player's team
-			if (copy.getPlayers() == 4 && copy.getMarble(firsthor,firstdiai) != marble
-					&& copy.getMarble(lasthor,lastdiai) != marble) {
-				if (!hasThree) return false;
-				else if (copy.getMarble(ball2) != marble) return false;//1+ of the moving marbles has to be player's marble
-			}
-			if (hasThree) {
-				if (copy.getMarble(ball2) != marble) {
-					if (copy.getPlayers() != 4) return false;
-					else if (copy.getMarble(ball2) != teamMate) return false;
-				}
-			}
-			if (isInLine(board,move)) {
-				if (board.getMarble(lasthor, lastdiai) != marble) return false;
-				if (board.getMarble(marbleTo(board, firsthor, firstdiai, dir)) == Marble.EMPTY) return true;
-				if (board.getMarble(marbleTo(board, firsthor, firstdiai, dir)) == marble) return false;
-				if (copy.getPlayers() == 4) {
-					if (board.getMarble(marbleTo(board, firsthor, firstdiai, dir)) == teamMate) return false;
-				}
-				int upTwoi = marbleTo(board,marbleTo(board,firsthor,firstdiai,dir),dir);
-				Marble upTwo = board.getMarble(upTwoi);
-				Marble upThree = board.getMarble(marbleTo(board,upTwoi,dir));
-				if (upTwo != null && upTwo != Marble.EMPTY) {
-					if (!hasThree) return false;
-					if (upThree != null && upThree != Marble.EMPTY) return false;
-				}
-				if (hasThree) {
-					if (upTwo == marble) return false;
-					if (copy.getPlayers() == 4 && upTwo == teamMate) return false;
-				}
-			}
-			else {
-				if (copy.getMarble(marbleTo(copy,firsthor,firstdiai,dir)) != Marble.EMPTY
-						|| copy.getMarble(marbleTo(copy,lasthor,lastdiai,dir)) != Marble.EMPTY) return false;
-				if (hasThree && copy.getMarble(marbleTo(copy,ball2,dir)) != Marble.EMPTY) return false;
-			}
-			setFields(copy,move);
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
-			return false;
-		}
-		finally {
-			points = tempscore;
-		}
-		return true;
 	}
 	
 	public void setFields(Board board, String move) {//e.g. 5,A;5,B;1

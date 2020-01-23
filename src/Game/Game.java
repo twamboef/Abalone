@@ -70,6 +70,7 @@ public class Game {
 			players[current].makeMove(board);
 			for (Player p : players) System.out.println(p.getName() + "'s points: " + p.getPoints());
 			System.out.println(board.toString());
+			System.out.println(board.getNRofMarbles(Marble.BLACK));
 			current++;
 			turnCount++;
 			if (current >= players.length) current = 0;
@@ -115,7 +116,7 @@ public class Game {
 					}
 				}
 			}
-			System.out.println("It's a draw!");
+			System.out.println("96 turns have passed. It's a draw!");
 		}
 	}
 }

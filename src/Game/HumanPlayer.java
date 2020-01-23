@@ -92,12 +92,11 @@ public class HumanPlayer extends Player {
 		}
 		String move = marble1 + ";" + marble2 + ";" + dir;
 		move = makeLeadingFirst(board,move);
-		boolean valid = isValidMove(board,move);
+		boolean valid = board.isValidMove(this,move);
 		if (!valid) {
 			System.out.println("Invalid move, please try again\n");
 			move = determineMove(board);
 		}
-		
 		return move;
 	}
 }
