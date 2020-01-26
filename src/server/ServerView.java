@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 public interface ServerView {
 	/**
@@ -7,6 +7,7 @@ public interface ServerView {
 	 * @param message the message to write to the standard output.
 	 */
 	public void showMessage(String message);
+	
 	/**
 	 * Prints the question and asks the user to input a String.
 	 * 
@@ -14,6 +15,7 @@ public interface ServerView {
 	 * @return The user input as a String
 	 */
 	public String getString(String question);
+	
 	/**
 	 * Prints the question and asks the user to input an Integer.
 	 * 
@@ -21,6 +23,7 @@ public interface ServerView {
 	 * @return The written Integer.
 	 */
 	public int getInt(String question);
+	
 	/**
 	 * Prints the question and asks the user for a yes/no answer.
 	 * 

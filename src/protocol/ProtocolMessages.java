@@ -1,12 +1,13 @@
-package Protocol;
+package protocol;
 
 public class ProtocolMessages {
 	/**
 	 * Delimiter used to separate arguments sent over the network.
 	 */
 	public static final String DELIMITER = ";";
+	
 	/**
-	 * Delimiter for CSV (comma separated values)
+	 * Delimiter for CSV (comma separated values).
 	 */
 	public static final String COMMA = ",";
 	

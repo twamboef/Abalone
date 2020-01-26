@@ -1,12 +1,14 @@
-package Game;
+package game;
 
 public class Game {
 	public static int NUMBER_PLAYERS = 2;
 	private Board board;
 	private Player[] players;
-	private int current,turnCount;
+	private int current;
+	private int turnCount;
+	
 	/**
-	 * Creates game for 2 players
+	 * Creates game for 2 players.
 	 * @param p1 player 1
 	 * @param p2 player 2
 	 * @ensures board != null
@@ -18,8 +20,9 @@ public class Game {
 	    players[1] = p2;
 		current = 0;
 	}
+	
 	/**
-	 * Creates game for 3 players
+	 * Creates game for 3 players.
 	 * @param p1 player 1
 	 * @param p2 player 2
 	 * @param p3 player 3
@@ -33,8 +36,9 @@ public class Game {
 	    players[2] = p3;
 		current = 0;
 	}
+	
 	/**
-	 * Creates game for 4 players
+	 * Creates game for 4 players.
 	 * @param p1 player 1
 	 * @param p2 player 2
 	 * @param p3 player 3
@@ -51,8 +55,9 @@ public class Game {
 		current = 0;
 		turnCount = 0;
 	}
+	
 	/**
-	 * Initialises the game
+	 * Initialises the game.
 	 * @requires board != null
 	 */
 	public void start() {
@@ -60,57 +65,74 @@ public class Game {
 		play();
 		printResult();
 	}
+	
 	/**
-	 * Plays the game until finished
+	 * Plays the game until finished.
 	 * @requires board != null
 	 */
 	public void play() {
 		System.out.println(board.toString());
-		while (!gameOver() && turnCount < 96) {
+		while (!gameOver()) {
 			players[current].makeMove(board);
-			for (Player p : players) System.out.println(p.getName() + "'s points: " + p.getPoints());
+			for (Player p : players) {
+				System.out.println(p.getName() + "'s points: " + p.getPoints());
+			}
 			System.out.println(board.toString());
-			System.out.println(board.getNRofMarbles(Marble.BLACK));
 			current++;
 			turnCount++;
-			if (current >= players.length) current = 0;
+			if (current >= players.length) {
+				current = 0;
+			}
 		}
 			
 	}
+	
 	/**
-	 * @requires players.length >= 2
+	 * Checks if the game is over (there is a winner or 96 turns have passed).
+	 * @requires players.length >= 2 && players.length <= 4
 	 * @ensures total team points >= 6 => gameOver
 	 * @return game finished or not
 	 */
 	public boolean gameOver() {
+		return (getWinner() != null || turnCount >= 96);
+	}
+	
+	/**
+	 * Returns the winner of the game.
+	 * @return winner if there is a winner, or null if there is not a winner (yet)
+	 */
+	public Player getWinner() {
 		for (Player p : players) {
-			if (board.getPlayers()!= 4) if (p.getPoints() >= 6) return true;
-			else {
+			if (board.getPlayers() != 4 && p.getPoints() >= 6) {
+				return p;
+			} else if (board.getPlayers() == 4) {
 				for (Player ps : players) {
 					if (ps.getMarble() == p.getMarble().next(4).next(4)) {
-						if (p.getPoints() + ps.getPoints() >= 6) return true;
+						if (p.getPoints() + ps.getPoints() >= 6) {
+							return p;
+						}
 					}
 				}
-				
 			}
 		}
-		return false;
+		return null;
 	}
+	
 	/**
+	 * Prints the result of the game to the standard output (winner/winners/draw).
 	 * @ensures result != null
-	 * @return result of game (winner or draw)
 	 */
 	public void printResult() {
 		for (Player p : players) {
 			if (board.getPlayers() != 4 && p.getPoints() >= 6) {
-				System.out.println("Player " + p.getName() + " won!");
+				System.out.println(p.getName() + " won!");
 				return;
-			}
-			else if (board.getPlayers() == 4) {
+			} else if (board.getPlayers() == 4) {
 				for (Player ps : players) {
 					if (ps.getMarble() == p.getMarble().next(4).next(4)) {
 						if (p.getPoints() + ps.getPoints() >= 6) {
-							System.out.println("Team " + p.getName() + " and " + ps.getName() + " won!");
+							System.out.println("Team " + p.getName()
+								+ " and " + ps.getName() + " won!");
 							return;
 						}
 					}

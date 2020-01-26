@@ -1,7 +1,7 @@
-package Protocol;
+package protocol;
 
-import Game.Game;
-import Server.Lobby;
+import game.Game;
+import server.Lobby;
 
 public interface ServerProtocol {
 	
