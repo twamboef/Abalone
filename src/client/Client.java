@@ -19,6 +19,7 @@ public class Client implements ClientProtocol{
 	private BufferedWriter out;
 	private Server server;
 	private String name;
+	private int test;
 	
 	ClientTUI client;
 	

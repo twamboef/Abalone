@@ -170,18 +170,6 @@ public class ClientHandler implements Runnable {
 		inLobby = false;
 	}
 	
-	public void processMove(String line) {
-		String[] movesplit = line.split(ProtocolMessages.DELIMITER);
-		String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] 
-				+ ProtocolMessages.DELIMITER + movesplit[4];
-		Game game = server.getGame(name);
-		try {
-			game.currentPlayer().setFields(game.getBoard(), move);
-		} catch (OffBoardException e) {
-			//Client should always send correct move
-		}
-	}
-	
 	private void shutDown() {
 		System.out.println("> [" + name + "] Shutting down.");
 		try {
