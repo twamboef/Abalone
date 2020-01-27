@@ -24,13 +24,12 @@ public class SmartAI implements Strategy  {
 				}
 				for(int j = 0; j <= 61; j++) {
 					copy.setField(j, marble);
-					if(empty.contains(j)) {
 						if(board.getNRofMarbles(oppmarble) == 8) {
-							// maak die zet, maar hoe krijg je 2e of 3e marble????
+							// hier willen we dus een marble heen, maar hoe
 						}
 					}
 				}
-		}
+			
 			if(board.getPlayers() == 3) {
 				Marble opp1marble = Marble.BLACK;
 				Marble opp2marble = Marble.WHITE;
@@ -40,8 +39,11 @@ public class SmartAI implements Strategy  {
 				else if(marble == Marble.WHITE) {
 					opp2marble = Marble.BLUE;
 				}
-				for(int j = 0; j < empty.size(); j++) {
-					
+				for(int j = 0; j <= 61; j++) {
+					copy.setField(j, marble);
+					if(board.getNRofMarbles(opp1marble) == 5 || board.getNRofMarbles(opp2marble) == 5) {
+						
+					}
 				}
 			}
 		
