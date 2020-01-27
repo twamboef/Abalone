@@ -85,7 +85,7 @@ public class HumanPlayer extends Player {
 					break;
 				}
 			} catch (NumberFormatException e) {
-				//error occurs if no integer is entered
+				//error occurs if no integer is entered, enters while loop again
 			}	
 			System.out.println("\nPlease enter a number between 0 and 5\n");
 		}

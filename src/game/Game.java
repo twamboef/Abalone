@@ -104,6 +104,22 @@ public class Game {
 	}
 	
 	/**
+	 * Returns the player who is now in turn.
+	 * @return Player whose turn it is right now
+	 */
+	public Player currentPlayer() {
+		return players[current];
+	}
+	
+	public Player[] getPlayers() {
+		return players;
+	}
+	
+	public Board getBoard() {
+		return board;
+	}
+	
+	/**
 	 * Returns the winner of the game.
 	 * @return winner if there is a winner, or null if there is not a winner (yet)
 	 */

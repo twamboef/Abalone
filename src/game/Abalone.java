@@ -4,7 +4,7 @@ import java.util.Scanner;
 
 public class Abalone {
 	/**
-	 * Main class for initialising an Abalone game
+	 * Main class for initialising an Abalone game.
 	 */
 	public static void main(String[] args) {
 		int players;

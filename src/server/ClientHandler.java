@@ -9,6 +9,8 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
+import exceptions.OffBoardException;
+import game.Game;
 import protocol.ProtocolMessages;
 
 public class ClientHandler implements Runnable {
@@ -63,14 +65,18 @@ public class ClientHandler implements Runnable {
 	
 	private void handleCommand(String message) throws IOException {
 		String[] splitmsg = message.split(ProtocolMessages.DELIMITER);
-		String command = splitmsg[0];
+		final String command = splitmsg[0];
 		String parm1 = null;
 		String parm2 = null;
+		String parm3 = null;
 		if (splitmsg.length > 1) {
 			parm1 = splitmsg[1];
 		}
 		if (splitmsg.length > 2) {
 			parm2 = splitmsg[2];
+		}
+		if (splitmsg.length > 3) {
+			parm3 = splitmsg[3];
 		}
 		if (!command.equals("CONNECT") && connected == false) {
 			out.write(command + ProtocolMessages.DELIMITER
@@ -104,13 +110,15 @@ public class ClientHandler implements Runnable {
 				out.write(server.doUnready(name));
 				break;
 			case ProtocolMessages.MOVE:
-				out.write(server.makeMove());
+				String move;
+				out.write(server.makeMove(name, (move = parm1 + ProtocolMessages.DELIMITER + parm2 
+						+ ProtocolMessages.DELIMITER + parm3)));
 				List<ClientHandler> gameClients = new ArrayList<ClientHandler>();
 				for (String p : server.getLobby(name).getPlayers()) {
 					gameClients.add(server.getClient(p));
 				}
 				for (ClientHandler ch : gameClients) {
-					ch.getWriter().write(server.sendMove(name, parm1));
+					ch.processMove(server.sendMove(name, move));
 				}
 				break;
 			case ProtocolMessages.FORFEIT:
@@ -162,8 +170,16 @@ public class ClientHandler implements Runnable {
 		inLobby = false;
 	}
 	
-	public BufferedWriter getWriter() {
-		return out;
+	public void processMove(String line) {
+		String[] movesplit = line.split(ProtocolMessages.DELIMITER);
+		String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] 
+				+ ProtocolMessages.DELIMITER + movesplit[4];
+		Game game = server.getGame(name);
+		try {
+			game.currentPlayer().setFields(game.getBoard(), move);
+		} catch (OffBoardException e) {
+			//Client should always send correct move
+		}
 	}
 	
 	private void shutDown() {

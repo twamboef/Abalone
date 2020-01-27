@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import exceptions.ExitProgram;
+import exceptions.OffBoardException;
 import game.ComputerPlayer;
 import game.Game;
 import game.HumanPlayer;
@@ -216,21 +217,30 @@ public class Server implements Runnable, ServerProtocol {
 
 	@Override
 	public String startGame(Lobby lobby) {
+		games.add(createGame(lobby));
+		String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
+		for (String p : lobby.getPlayers()) {
+			result += p + ProtocolMessages.DELIMITER;
+		}
+		return result;
+	}
+	
+	public Game createGame(Lobby lobby) {
 		String current;
 		Player p1 = new HumanPlayer((current = lobby.getPlayers().get(0)),Marble.BLACK);
 		if (current.equals("-BOT")) {
-			p1 = new ComputerPlayer("BOT",Marble.BLACK);
+			p1 = new ComputerPlayer("BOT_P1",Marble.BLACK);
 		}
 		Player p2 = new HumanPlayer((current = lobby.getPlayers().get(1)),Marble.WHITE);
 		if (current.equals("-BOT")) {
-			p2 = new ComputerPlayer("BOT",Marble.WHITE);
+			p2 = new ComputerPlayer("BOT_P2",Marble.WHITE);
 		}
 		Game game = new Game(p1,p2);
 		if (lobby.getSize() == 3) {
 			p2.setMarble(Marble.BLUE);
 			Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.WHITE);
 			if (current.equals("-BOT")) {
-				p3 = new ComputerPlayer("BOT",Marble.WHITE);
+				p3 = new ComputerPlayer("BOT_P3",Marble.WHITE);
 			}
 			game = new Game(p1,p2,p3);
 		} else if (lobby.getSize() == 4) {
@@ -238,24 +248,25 @@ public class Server implements Runnable, ServerProtocol {
 			p2.setMarble(Marble.BLACK);
 			Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.BLUE);
 			if (current.equals("-BOT")) {
-				p3 = new ComputerPlayer("BOT",Marble.BLUE);
+				p3 = new ComputerPlayer("BOT_P3",Marble.BLUE);
 			}
-			Player p4 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.WHITE);
+			Player p4 = new HumanPlayer((current = lobby.getPlayers().get(3)),Marble.WHITE);
 			if (current.equals("-BOT")) {
-				p4 = new ComputerPlayer("BOT",Marble.WHITE);
+				p4 = new ComputerPlayer("BOT_P4",Marble.WHITE);
 			}
 			game = new Game(p1,p2,p3,p4);
 		}
-		String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
-		for (String p : lobby.getPlayers()) {
-			result += p + ProtocolMessages.DELIMITER;
-		}
-		game.start();
-		return result;
+		return game;
 	}
 
 	@Override
-	public String makeMove() {
+	public String makeMove(String name, String move) {
+		try {
+			getGame(name).currentPlayer().setFields(getGame(name).getBoard(), move);
+		} catch (OffBoardException e) {
+			return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER 
+					+ ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+		}
 		return ProtocolMessages.MOVE + delimSuccess;
 	}
 
@@ -267,8 +278,15 @@ public class Server implements Runnable, ServerProtocol {
 	
 	@Override
 	public String gameFinish(Game game) {
+		lobbies.remove(getLobby(game.currentPlayer().getName()));
+		String winner;
+		try {
+			winner = game.getWinner().getName();
+		} catch (NullPointerException e) {
+			winner = "";
+		}
 		return ProtocolMessages.FINISH + ProtocolMessages.DELIMITER
-				+ game.getWinner().getName() + ProtocolMessages.DELIMITER;
+				+ winner + ProtocolMessages.DELIMITER;
 	}
 
 	@Override
@@ -332,6 +350,22 @@ public class Server implements Runnable, ServerProtocol {
 	
 	public void removeClient(ClientHandler client) {
 		clients.remove(client);
+	}
+	
+	/**
+	 * Returns the game the player is currently in.
+	 * @param name of a player
+	 * @return game or null
+	 */
+	public Game getGame(String name) {
+		for (Game game : games) {
+			for (Player player : game.getPlayers()) {
+				if (player.getName().equals(name)) {
+					return game;
+				}
+			}
+		}
+		return null;
 	}
 	
 	/**

@@ -134,10 +134,10 @@ public abstract class Player {
 	 * Sets the fields of the board according to the move. 
 	 * @requires isValidMoove(board,move)
 	 * @param board of the game
-	 * @param move of a player
+	 * @param move of a player (e.g. 5,A;5,B;1)
 	 * @throws OffBoardException if getIndex or marbleTo throws this exception
 	 */
-	public void setFields(Board board, String move) throws OffBoardException { //e.g. 5,A;5,B;1
+	public void setFields(Board board, String move) throws OffBoardException {
 		String[] movesplit = move.split(";");
 		String[] first = movesplit[0].split(",");
 		String[] last = movesplit[1].split(",");

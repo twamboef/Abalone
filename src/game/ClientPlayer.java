@@ -1,15 +1,26 @@
 package game;
 
+import server.Server;
+
 public class ClientPlayer extends Player {
+	private Server server;
+	private Game game;
+	private ClientHandler ch;
 
-	public ClientPlayer(String name, Marble marble) {
+	public ClientPlayer(Server server, String name, Marble marble) {
 		super(name, marble);
+		this.server = server;
 	}
-
+	
+	
+	
 	@Override
 	public String determineMove(Board board) {
-		// TODO Auto-generated method stub
-		return null;
+		while (!game.gameOver()) {
+			if (game.currentPlayer() != this) {
+				ch.
+			}
+		}
 	}
 	
 }
