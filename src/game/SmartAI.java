@@ -2,7 +2,8 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+
+import exceptions.OffBoardException;
 
 public class SmartAI implements Strategy  {
 
@@ -10,24 +11,42 @@ public class SmartAI implements Strategy  {
 	public String determineMove(Board board, Marble marble) {
 		List<Integer> empty = new ArrayList<Integer>();
 		for (int i = 0; i < 61; i ++) {
-			if (board.isEmptyField(i)) {
-				empty.add(i);
-			}
+			try {
+                if (board.isEmptyField(i)) {
+                	empty.add(i);
+                }
+            } catch (OffBoardException e) {
+               // If field is OffBoard, which can't happen because i < 61
+            }
 		}
 		
 		//check if you can win the game
-		Board copy = board.deepCopy();
+		Board copy = null;
+        try {
+            copy = board.deepCopy();
+        } catch (OffBoardException e) {
+           // Hard coded, so won't happen
+        }
 			if(board.getPlayers() == 2) {
 				Marble oppmarble = Marble.BLACK;
 				if(marble == Marble.BLACK) {
 					oppmarble = Marble.WHITE;
 				}
 				for(int j = 0; j <= 61; j++) {
-					copy.setField(j, marble);
+					try {
+                        copy.setField(j, marble);
+                    } catch (OffBoardException e) {
+                        e.printStackTrace();
+                        // If j is not a valid index
+                    }
 					if(empty.contains(j)) {
-						if(board.getNRofMarbles(oppmarble) == 8) {
-							// maak die zet, maar hoe krijg je 2e of 3e marble????
-						}
+						try {
+                            if(board.getNRofMarbles(oppmarble) == 8) {
+                            	// maak die zet, maar hoe krijg je 2e of 3e marble????
+                            }
+                        } catch (OffBoardException e) {
+                           // Hard coded
+                        }
 					}
 				}
 		}
@@ -69,18 +88,27 @@ public class SmartAI implements Strategy  {
 			dir = Direction.LEFT;
 		}
 		
-		String marble1 = board.getCoords(m1);
-		String marble2 = board.getCoords(m2);
+		String marble1 = null;
+		String marble2 = null;
+        try {
+            marble1 = board.getCoords(m1);
+            marble2 = board.getCoords(m2);
+        } catch (OffBoardException e) {
+           e.printStackTrace();
+        }
 		
-		Game game;
 		String p1name = "pc";
 		Player p1 = new ComputerPlayer(p1name, Marble.WHITE);
 		String move = marble1 + ";" + marble2 + ";" + dir;
 		
 		//checks if the move proposed is valid, if not it makes a new move
-		if (board.isValidMove(p1, move) == false) {
-			determineMove(board, marble);
-		}
+		try {
+            if (board.isValidMove(p1, move) == false) {
+            	determineMove(board, marble);
+            }
+        } catch (OffBoardException e) {
+            determineMove(board,marble);
+        }
 		return move;
 	}
 	

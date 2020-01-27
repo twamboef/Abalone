@@ -24,7 +24,7 @@ public class Server implements Runnable, ServerProtocol {
     private List<Game> games;
 
     /**
-     * String for laziness, consisting of ";200;".
+     * String consisting of ";200;".
      */
     private String delimSuccess = ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
 
@@ -42,7 +42,7 @@ public class Server implements Runnable, ServerProtocol {
                 while (true) {
                     Socket sock = ssock.accept();
                     String name = view.getString("What is your name?");
-                    view.showMessage("New client [" + name + "] connected!");
+                    view.showMessage("New clientHandler [" + name + "] connected!");
                     ClientHandler handler = new ClientHandler(sock, this, name);
                     new Thread(handler).start();
                     clients.add(handler);
@@ -82,26 +82,26 @@ public class Server implements Runnable, ServerProtocol {
     }
 
     /**
-     * Returns the client using the name.
+     * Returns the clientHandler using the name.
      * 
-     * @requires only one client exists with this name
-     * @param name of a client
-     * @return client if found, null if not found
+     * @requires only one clientHandler exists with this name
+     * @param name of a clientHandler
+     * @return clientHandler if found, null if not found
      */
-    public ClientHandler getClient(String name) {
-        for (ClientHandler client : clients) {
-            if (client.getName().equals(name)) {
-                return client;
+    public ClientHandler getClientHandler(String name) {
+        for (ClientHandler clientHandler : clients) {
+            if (clientHandler.getName().equals(name)) {
+                return clientHandler;
             }
         }
         return null;
     }
 
     /**
-     * Returns the lobby a client is in.
+     * Returns the lobby a clientHandler is in.
      * 
-     * @param name of a client
-     * @return lobby of client if in one, or null if not
+     * @param name of a clientHandler
+     * @return lobby of clientHandler if in one, or null if not
      */
     public Lobby getLobby(String name) {
         for (Lobby lobby : lobbies) {
@@ -115,7 +115,7 @@ public class Server implements Runnable, ServerProtocol {
     }
 
     private boolean isInLobby(String name) {
-        return getClient(name).isInLobby();
+        return getClientHandler(name).isInLobby();
     }
     // TODO check parameters
 
@@ -125,12 +125,13 @@ public class Server implements Runnable, ServerProtocol {
             return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
                     + ProtocolMessages.DELIMITER;
         }
-        for (ClientHandler client : clients) {
-            if (client.getName().equals(name)) {
+        for (ClientHandler clientHandler : clients) {
+            if (clientHandler.getName().equals(name)) {
                 return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED
                         + ProtocolMessages.DELIMITER;
             }
         }
+        clients.add(getClientHandler(name));
         return ProtocolMessages.CONNECT + delimSuccess;
     }
 
@@ -167,6 +168,7 @@ public class Server implements Runnable, ServerProtocol {
         for (Lobby lobby : lobbies) {
             if (lobby.getName().equals(lobbyname) && lobby.isJoinable() && !isInLobby(name)) {
                 lobby.join(name);
+                getClientHandler(name).joinLobby();
                 return ProtocolMessages.JOIN + delimSuccess;
             }
         }
@@ -176,13 +178,11 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String leaveLobby(String name) {
-        for (Lobby lobby : lobbies) {
-            for (String player : lobby.getPlayers()) {
-                if (player.equals(name)) {
-                    lobby.leave(name);
-                    return ProtocolMessages.LEAVE + delimSuccess;
-                }
-            }
+        Lobby lobby = getLobby(name);
+        if (lobby != null) {
+            getClientHandler(name).leaveLobby();
+            lobby.leave(name);
+            return ProtocolMessages.LEAVE + delimSuccess;
         }
         return ProtocolMessages.LEAVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                 + ProtocolMessages.DELIMITER;
@@ -190,9 +190,10 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String doReady(String name) {
-        ClientHandler client = getClient(name);
-        if (client.isInLobby() && !client.isReady()) {
-            client.ready();
+        ClientHandler clientHandler = getClientHandler(name);
+        if (clientHandler.isInLobby() && !clientHandler.isReady()) {
+            clientHandler.ready();
+            getLobby(name).ready();
             return ProtocolMessages.READY + delimSuccess;
         }
         return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -201,9 +202,10 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String doUnready(String name) {
-        ClientHandler client = getClient(name);
-        if (client.isInLobby() && client.isReady()) {
-            client.unready();
+        ClientHandler clientHandler = getClientHandler(name);
+        if (clientHandler.isInLobby() && clientHandler.isReady()) {
+            clientHandler.unready();
+            getLobby(name).unready();
             return ProtocolMessages.UNREADY + delimSuccess;
         }
         return ProtocolMessages.UNREADY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -231,6 +233,7 @@ public class Server implements Runnable, ServerProtocol {
 
     /**
      * Creates a new game to be added to the list of games (or sent to clients).
+     * 
      * @param lobby with players for the game
      * @requires lobby.getSize() == lobby.getPlayers().length
      * @return newly made game
@@ -305,7 +308,7 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String playerForfeit(String name) {
-        // if (getClient(name).)
+        // if (getClientHandler(name).)
         return null;
     }
 
@@ -357,8 +360,8 @@ public class Server implements Runnable, ServerProtocol {
         return null;
     }
 
-    public void removeClient(ClientHandler client) {
-        clients.remove(client);
+    public void removeClient(ClientHandler clientHandler) {
+        clients.remove(clientHandler);
     }
 
     /**

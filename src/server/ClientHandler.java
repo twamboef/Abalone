@@ -110,29 +110,21 @@ public class ClientHandler implements Runnable {
                 }
                 break;
             case ProtocolMessages.READY:
-                result = server.doReady(name);
-                out.write(result);
-                if (result.contains("200")) {
-                    ready();
-                }
+                out.write(server.doReady(name));
                 break;
             case ProtocolMessages.UNREADY:
-                result = server.doUnready(name);
-                out.write(result);
-                if (result.contains("200")) {
-                    unready();
-                }
+                out.write(server.doUnready(name));
                 break;
             case ProtocolMessages.MOVE:
                 String move;
                 out.write(server.makeMove(name,
                         (move = parm1 + ProtocolMessages.DELIMITER + parm2 + ProtocolMessages.DELIMITER + parm3)));
-                List<ClientHandler> gameClients = new ArrayList<ClientHandler>();
+                List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
                 for (String p : server.getLobby(name).getPlayers()) {
-                    gameClients.add(server.getClient(p));
+                    clientHandlers.add(server.getClientHandler(p));
                 }
                 // TODO SHOULD BE SENT TO CLIENT INSTEAD OF CLIENTHANDLER
-                for (ClientHandler ch : gameClients) {
+                for (ClientHandler ch : clientHandlers) {
                     ch.processMove(server.sendMove(name, move));
                 }
                 break;
