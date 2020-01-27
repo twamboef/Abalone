@@ -1,7 +1,7 @@
-package Protocol;
+package protocol;
 
 import Game.Game;
-import Server.Lobby;
+import server.Lobby;
 
 public interface ServerProtocol {
 	
@@ -23,7 +23,7 @@ public interface ServerProtocol {
 	 
 	public abstract String startGame(Lobby lobby);
 	
-	public abstract String makeMove();
+	public abstract String makeMove(String name, String move);
 	
 	public abstract String sendMove(String name, String move);
 	

@@ -4,14 +4,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import exceptions.OffBoardException;
+
 public class SmartAI implements Strategy  {
 
 	@Override
 	public String determineMove(Board board, Marble marble) {
 		List<Integer> empty = new ArrayList<Integer>();
 		for (int i = 0; i < 61; i ++) {
-			if (board.isEmptyField(i)) {
-				empty.add(i);
+			try {
+				if (board.isEmptyField(i)) {
+					empty.add(i);
+				}
+			} catch (OffBoardException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 		
@@ -23,13 +30,24 @@ public class SmartAI implements Strategy  {
 					oppmarble = Marble.WHITE;
 				}
 				for(int j = 0; j <= 61; j++) {
-					copy.setField(j, marble);
-						if(board.getNRofMarbles(oppmarble) == 8) {
-							// hier willen we dus een marble heen, maar hoe
+					try {
+						copy.setField(j, marble);
+					} catch (OffBoardException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(empty.contains(j)) {
+						try {
+							if(board.getNRofMarbles(oppmarble) == 8) {
+								// maak die zet, maar hoe krijg je 2e of 3e marble????
+							}
+						} catch (OffBoardException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 					}
 				}
-			
+		}
 			if(board.getPlayers() == 3) {
 				Marble opp1marble = Marble.BLACK;
 				Marble opp2marble = Marble.WHITE;
@@ -39,11 +57,8 @@ public class SmartAI implements Strategy  {
 				else if(marble == Marble.WHITE) {
 					opp2marble = Marble.BLUE;
 				}
-				for(int j = 0; j <= 61; j++) {
-					copy.setField(j, marble);
-					if(board.getNRofMarbles(opp1marble) == 5 || board.getNRofMarbles(opp2marble) == 5) {
-						
-					}
+				for(int j = 0; j < empty.size(); j++) {
+					
 				}
 			}
 		

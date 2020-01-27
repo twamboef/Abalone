@@ -1,5 +1,7 @@
 package Game;
 
+import exceptions.OffBoardException;
+
 public class Board {
 	public static final int size = 61;
 	public static final String SPACE = "  ";
@@ -15,168 +17,223 @@ public class Board {
 	int[] diagonal = {1,2,3,4,5,6,7,8,9};
 	private Marble[] fields;
 	public int players;
+	
 	/**
-	 * Constructor of the class
-	 * @param amount of players
+	 * Constructor of the class.
+	 * @param players amount of players
 	 * @ensures fields != null
 	 */
 	public Board(int players) {
 		fields = new Marble[size];
 		this.players = players;
-		reset();
+		try {
+			reset();
+		} catch (OffBoardException e) {
+			e.printStackTrace();
+		}
 	}
+	
 	/**
-     * Creates a deep copy of the board
+     * Creates a deep copy of the board.
      * @ensures new object (not this object)
      * @ensures the values of all fields of the copy match the ones of this board
      * @return copy of this board
+	 * @throws OffBoardException (can't happen because hard coded)
      */
-	public Board deepCopy() {
+	
+	public Board deepCopy() throws OffBoardException {
 		Board copy = new Board(players);
-		for (int i=0; i<size; i++) copy.setField(i, this.getMarble(i));
+		for (int i = 0; i < size; i++) {
+			copy.setField(i, this.getMarble(i));
+		}
 		return copy;
 	}
+	
 	/**
-	 * Calculates how many marbles a player has on the board
+	 * Calculates how many marbles a player has on the board.
 	 * @param marble the marble of the player
 	 * @return amount of marbles of this player that have not been pushed off
+	 * @throws OffBoardException if index is invalid
 	 */
-	public int getNRofMarbles(Marble marble) {
+	public int getNRofMarbles(Marble marble) throws OffBoardException {
 		int j = 0;
-		for(int i = 0; i < 61; i++) {
-			if(getMarble(i) == marble) {
+		for (int i = 0; i < 61; i++) {
+			if (getMarble(i) == marble) {
 				j++;
 			}
 		}	
 		return j;
 	}	
+	
 	/**
-	 * Converts a combination of horizontal and diagonal coordinate to index
+	 * Converts a combination of horizontal and diagonal coordinate to index.
+	 * @param hor horizontal coordinate
+	 * @param dia diagonal coordinate
 	 * @ensures result == -1 || fields[result] != null
-	 * @return index if valid
-	 * @return -1 if invalid
-	 * @param players
+	 * @return index for hor,dia combination
+	 * @throws OffBoardException if hor,dia combination is not a valid index on the board
 	 */
-	public int getIndex(char hor, int dia) {
-		if (!isValidField(hor,dia)) return -1;
+	public int getIndex(char hor, int dia) throws OffBoardException {
+		if (!isValidField(hor,dia)) {
+			throw new OffBoardException("Invalid combination of horizontal and diagonal coordinate");
+		}
 		int index = new String(horizontal).indexOf(hor);
 		int result = 0;
 		if (index <= 4) {
 			result = dia;
-			for (int i=0; i < index; i++) {
+			for (int i = 0; i < index; i++) {
 				result += 5 + i;
 			}
-		}
-		else {
-			result = size-(9-dia);
-			for (int i=index; i < horizontal.length-1; i++) {
-				result -= 9 - (i-3);
+		} else {
+			result = size - (9 - dia);
+			for (int i = index; i < horizontal.length-1; i++) {
+				result -= 9 - (i - 3);
 			}
 		}
-		return result-1;
+		return result - 1;
 	}
+	
 	/**
-	 * Converts an index to a combination of a horizontal and diagonal coordinate
-	 * @param index i 
-	 * @return String with coordinates if index is valid
-	 * @return null if invalid
+	 * Converts an index to a combination of a horizontal and diagonal coordinate.
+	 * @param i index
+	 * @return String with coordinates for index i
+	 * @throws OffBoardException when index is invalid 
 	 */
-	public String getCoords(int i) {
-		if (i < 5) return "A," + (i+1);
-		else if (i < 11) return "B," + (i-4);
-		else if (i < 18) return "C," + (i-10);
-		else if (i < 26) return "D," + (i-17);
-		else if (i < 35) return "E," + (i-26+1);
-		else if (i < 43) return "F," + (i-35+2);
-		else if (i < 50) return "G," + (i-43+3);
-		else if (i < 56) return "H," + (i-50+4);
-		else if (i < 61) return "I," + (i-56+5);
-		else return null;
+	public String getCoords(int i) throws OffBoardException {
+		if (i < 5) {
+			return "A," + (i + 1);
+		} else if (i < 11) {
+			return "B," + (i - 4);
+		} else if (i < 18) {
+			return "C," + (i - 10);
+		} else if (i < 26) {
+			return "D," + (i - 17);
+		} else if (i < 35) {
+			return "E," + (i - 26 + 1);
+		} else if (i < 43) {
+			return "F," + (i - 35 + 2);
+		} else if (i < 50) {
+			return "G," + (i - 43 + 3);
+		} else if (i < 56) {
+			return "H," + (i - 50 + 4);
+		} else if (i < 61) {
+			return "I," + (i - 56 + 5);
+		} else {
+			throw new OffBoardException("Invalid index");
+		}
 	}
+	
 	/**
-	 * Returns the marble on the field given
+	 * Returns the marble on the field given.
 	 * @param index of which to get the marble
-	 * @return marble if valid index
-	 * @return null if invalid index
+	 * @return marble if valid index, null if invalid
+	 * @throws OffBoardException if index is invalid
 	 */
-	public Marble getMarble(int index) {
-		return (index >= 0 && index < 61) ? fields[index] : null;
+	public Marble getMarble(int index) throws OffBoardException {
+		if (index >= 0 && index < 61) {
+			return fields[index];
+		} else {
+			throw new OffBoardException("Invalid index");
+		}
 	}
+	
 	/**
-	 * Returns the marble of the field given
+	 * Returns the marble of the field given.
 	 * Uses getMarble(int index) and getIndex(hor, dia)
 	 * @param hor Horizontal coordinate (A-I)
 	 * @param dia Diagonal coordinate (1-9)
-	 * @return marble if valid index
-	 * @return null if invalid index
+	 * @return marble if valid index, null if invalid
 	 */
 	public Marble getMarble(char hor, int dia) {
-		return getMarble(getIndex(hor, dia));
+		try {
+			return getMarble(getIndex(hor, dia));
+		} catch (OffBoardException e) {
+			return null;
+		}
 	}
+	
 	/**
-	 * Returns representation of marbles and empty field
+	 * Returns representation of marbles and empty field.
 	 * @param m Marble of which to get representation
 	 * @ensures result != null
-	 * @return 3-letter representation of marble if field not empty
-	 * @return "   " if field is empty
+	 * @return 3-letter representation of marble if field not empty, "   " if field is empty
 	 */
 	public String getRep(Marble m) {
-		if (m == Marble.WHITE) return "WHI";
-		else if (m == Marble.BLACK) return "BLK";
-		else if (m == Marble.BLUE) return "BLU";
-		else if (m == Marble.RED) return "RED";
-		else return "   ";
+		if (m == Marble.WHITE)  {
+			return "WHI";
+		} else if (m == Marble.BLACK) {
+			return "BLK";
+		} else if (m == Marble.BLUE) {
+			return "BLU";
+		} else if (m == Marble.RED) {
+			return "RED";
+		} else {
+			return "   ";
+		}
 	}
+	
 	/**
-	 * Returns the amount of players on this board
+	 * Returns the amount of players on this board.
 	 * @return players
 	 */
 	public int getPlayers() {
 		return players;
 	}
+	
 	/**
-	 * Sets the amount of players for this board
+	 * Sets the amount of players for this board.
 	 * @param players new amount of players for this board
 	 */
 	public void setPlayers(int players) {
 		this.players = players;
 	}
+	
 	/**
-	 * Changes the marble of field i
+	 * Changes the marble of field i.
 	 * @requires i to be a valid index
 	 * @param i index of the field
 	 * @param m new marble for this field
+	 * @throws OffBoardException if index i is invalid
 	 * @ensures field i is set to marble m
 	 */
-	public void setField(int i, Marble m) {
-		fields[i] = m;
+	public void setField(int i, Marble m) throws OffBoardException {
+		try {
+			fields[i] = m;
+		}
+		catch (IndexOutOfBoundsException e) {
+			throw new OffBoardException("Invalid index");
+		}
 	}
+	
 	/**
-	 * Changes the marble of field (hor,dia)
+	 * Changes the marble of field (hor,dia).
 	 * @requires (hor,dia) to be a valid coordinate
 	 * @param hor Horizontal coordinate (A-I)
 	 * @param dia Diagonal coordinate (1-9)
 	 * @param m new marble for this field
+	 * @throws OffBoardException if index i is invalid
 	 * @ensures field (hor,dia) is set to marble m
 	 */
-	public void setField(char hor, int dia, Marble m) {
+	public void setField(char hor, int dia, Marble m) throws OffBoardException {
 		fields[getIndex(hor,dia)] = m;
 	}
+	
 	/**
-	 * Checks whether hor is a valid horizontal coordinate
+	 * Checks whether hor is a valid horizontal coordinate.
 	 * @param hor horizontal coordinate
 	 * @return boolean if hor is a valid horizontal coordinate
 	 */
 	public boolean isValidHorizontal(char hor) {
-		for (int i=0; i < horizontal.length; i++) {
+		for (int i = 0; i < horizontal.length; i++) {
 			if (horizontal[i] == hor) {
 				return true;
 			}
 		}
 		return false;
 	}
+	
 	/**
-	 * Checks whether dia is a valid diagonal coordinate
+	 * Checks whether dia is a valid diagonal coordinate.
 	 * @param hor horizontal coordinate (needed because each row has a different amount of valid diagonals)
 	 * @param dia diagonal coordinate
 	 * @return boolean if dia is a valid diagonal coordinate
@@ -185,24 +242,24 @@ public class Board {
 		int index = new String(horizontal).indexOf(hor);
 		if (index == -1) {
 			return false;
-		}
-		else if (index <= 4) {
-			return dia <= index+5;
-		}
-		else {
+		} else if (index <= 4) {
+			return dia <= index + 5;
+		} else {
 			return dia >= index - 3 && dia <= 9;
 		}
 	}
+	
 	/**
-	 * Checks whether the index represents a field on the board
+	 * Checks whether the index represents a field on the board.
 	 * @param index of a field
 	 * @return boolean if valid field
 	 */
 	public boolean isValidField(int index) {
 		return index < size && index >= 0;
 	}
+	
 	/**
-	 * Checks whether the coordinates represent a field on the board
+	 * Checks whether the coordinates represent a field on the board.
 	 * @param hor horizontal coordinate
 	 * @param dia diagonal coordinate
 	 * @return boolean if valid field
@@ -210,17 +267,20 @@ public class Board {
 	public boolean isValidField(char hor, int dia) {
 		return isValidHorizontal(hor) && isValidDiagonal(hor, dia);
 	}
+	
 	/**
-	 * Checks whether the index represents an empty field on the board
+	 * Checks whether the index represents an empty field on the board.
 	 * @requires isValidField(index)
 	 * @param index of a field
 	 * @return boolean if empty field
+	 * @throws OffBoardException if index is invalid
 	 */
-	public boolean isEmptyField(int index) {
+	public boolean isEmptyField(int index) throws OffBoardException {
 		return getMarble(index) == Marble.EMPTY;
 	}
+	
 	/**
-	 * Checks whether the coordinates represent an empty field on the board
+	 * Checks whether the coordinates represent an empty field on the board.
 	 * @requires isValidField(hor,dia)
 	 * @param hor horizontal coordinate
 	 * @param dia diagonal coordinate
@@ -229,20 +289,26 @@ public class Board {
 	public boolean isEmptyField(char hor, int dia) {
 		return getMarble(hor,dia) == Marble.EMPTY;
 	}
+	
 	/**
-	 * Checks whether the move is valid on this board
+	 * Checks whether the move is valid on this board.
 	 * @param player to check it for
 	 * @param move to check for validity
 	 * @return boolean if valid move
+	 * @throws OffBoardException if getMarble() throws this exception
 	 */
-	public boolean isValidMove(Player player, String move) {
+	public boolean isValidMove(Player player, String move) throws OffBoardException {
 		int tempscore = player.getPoints();
 		Marble marble = player.getMarble();
 		Board copy = deepCopy();
 		String[] movesplit = move.split(";");
-		String[] first, last;
-		char firsthor ,lasthor;
-		int firstdiai,lastdiai,dirvalue;
+		String[] first; 
+		String[] last;
+		char firsthor;
+		char lasthor;
+		int firstdiai;
+		int lastdiai;
+		int dirvalue;
 		Direction dir;
 		try {
 			first = movesplit[0].split(",");
@@ -253,111 +319,145 @@ public class Board {
 			lastdiai = Integer.parseInt(last[0]);
 			dirvalue = Integer.parseInt(movesplit[2]);
 			dir = Direction.values()[dirvalue];
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return false;
 		}
+		boolean hasThree = false;
 		try {
-			boolean hasThree = false;
+			hasThree = false;
 			int ball2 = -1;
 			Marble teamMate = marble.next(4).next(4);
-			for (int i = 0; i<6 && !hasThree; i++) { //test if moving three balls
-				if (player.marbleTo(copy, (ball2 = player.marbleTo(copy,lasthor,lastdiai,Direction.values()[i])),Direction.values()[i]) == getIndex(firsthor,firstdiai))
+			for (int i = 0; i < 6 && !hasThree; i++) { //test if moving three balls
+				if (player.marbleTo(copy, (ball2 = player.marbleTo(
+						copy,lasthor,lastdiai,Direction.values()[i])),
+						Direction.values()[i])	== getIndex(firsthor,firstdiai)) {
 					hasThree = true;
+				}
 			}
 			if (copy.getMarble(firsthor,firstdiai) != marble) {
-				if (copy.getPlayers() != 4) return false;
-				else if (copy.getMarble(firsthor,firstdiai) != teamMate) return false;
+				if (copy.getPlayers() != 4) {
+					return false;
+				} else if (copy.getMarble(firsthor,firstdiai) != teamMate) {
+					return false;
+				}
 			}
-			if (copy.getMarble(lasthor, lastdiai) != marble) {
-				if (copy.getPlayers() != 4) return false;
-				else if (copy.getMarble(lasthor,lastdiai) != teamMate) return false;//copy part checks whether all selected
-			}																		//marbles are of the player's team
+			if (copy.getMarble(lasthor, lastdiai) != marble) { //copy part checks whether all
+				if (copy.getPlayers() != 4) { //selected marbles are of the player's team
+					return false;
+				} else if (copy.getMarble(lasthor,lastdiai) != teamMate) {
+					return false;
+				}
+			}
 			if (copy.getPlayers() == 4 && copy.getMarble(firsthor,firstdiai) != marble
 					&& copy.getMarble(lasthor,lastdiai) != marble) {
-				if (!hasThree) return false;
-				else if (copy.getMarble(ball2) != marble) return false;//1+ of the moving marbles has to be player's marble
+				if (!hasThree) {
+					return false;
+				} else if (copy.getMarble(ball2) != marble) {
+					return false;//1+ of the moving marbles has to be player's marble
+				}
 			}
 			if (hasThree) {
 				if (copy.getMarble(ball2) != marble) {
-					if (copy.getPlayers() != 4) return false;
-					else if (copy.getMarble(ball2) != teamMate) return false;
+					if (copy.getPlayers() != 4) {
+						return false;
+					} else if (copy.getMarble(ball2) != teamMate) {
+						return false;
+					}
 				}
 			}
 			if (player.isInLine(copy,move)) {
-				if (getMarble(lasthor, lastdiai) != marble) return false;
-				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) return true;
-				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == marble) return false;
-				if (copy.getPlayers() == 4) {
-					if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == teamMate) return false;
+				if (getMarble(lasthor, lastdiai) != marble) {
+					return false;
 				}
-				int upTwoi = player.marbleTo(copy,player.marbleTo(copy,firsthor,firstdiai,dir),dir);
-				Marble upTwo = getMarble(upTwoi);
-				Marble upThree = getMarble(player.marbleTo(copy,upTwoi,dir));
-				if (upTwo != null && upTwo != Marble.EMPTY) {
-					if (!hasThree) return false;
-					if (upThree != null && upThree != Marble.EMPTY) return false;
+				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) {
+					return true;
 				}
-				if (hasThree) {
-					if (upTwo == marble) return false;
-					if (copy.getPlayers() == 4 && upTwo == teamMate) return false;
+				if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == marble) {
+					return false;
+				}
+				if (copy.getPlayers() == 4
+						&& getMarble(
+								player.marbleTo(copy, firsthor, firstdiai, dir))
+						== teamMate) {
+					return false;
 				}
 			}
-			else {
+			int upTwoi = player.marbleTo(copy,player.marbleTo(copy,firsthor,firstdiai,dir),dir);
+			Marble upTwo = getMarble(upTwoi);
+			Marble upThree = getMarble(player.marbleTo(copy,upTwoi,dir));
+			if (upTwo != null && upTwo != Marble.EMPTY) {
+				if (!hasThree) {
+					return false;
+				}
+				if (upThree != null && upThree != Marble.EMPTY) {
+					return false;
+				}
+			}
+			if (hasThree) {
+				if (upTwo == marble) {
+					return false;
+				}
+				if (copy.getPlayers() == 4 && upTwo == teamMate) {
+					return false;
+				}
+			} else {
 				if (copy.getMarble(player.marbleTo(copy,firsthor,firstdiai,dir)) != Marble.EMPTY
-						|| copy.getMarble(player.marbleTo(copy,lasthor,lastdiai,dir)) != Marble.EMPTY) return false;
-				if (hasThree && copy.getMarble(player.marbleTo(copy,ball2,dir)) != Marble.EMPTY) return false;
+						|| copy.getMarble(player.marbleTo(copy,lasthor,lastdiai,dir))
+						!= Marble.EMPTY) {
+					return false;
+				}
+				if (hasThree && copy.getMarble(player.marbleTo(copy,ball2,dir)) != Marble.EMPTY) {
+					return false;
+				}
 			}
 			player.setFields(copy,move);
-		}
-		catch (ArrayIndexOutOfBoundsException e) {
+		} catch (ArrayIndexOutOfBoundsException e) {
 			e.printStackTrace();
 			return false;
-		}
-		finally {
+		} finally {
 			player.setPoints(tempscore);
 		}
 		return true;
 	}
+	
 	/**
-	 * Resets the board for the amount of players
+	 * Resets the board for the amount of players.
 	 * If the amount of players is not in the range of 2-4,
 	 * all fields are set to empty
+	 * @throws OffBoardException if getIndex throws this exception
 	 */
-	public void reset() {
+	public void reset() throws OffBoardException {
 		if (players == 2) {
-			for (int i = 0; i<11;i++) {
+			for (int i = 0; i < 11; i++) {
 				fields[i] = Marble.WHITE;
 			}
-			for (int i = 13; i<16; i++) {
+			for (int i = 13; i < 16; i++) {
 				fields[i] = Marble.WHITE;
 			}
-			for (int i = 45; i<48; i++) {
+			for (int i = 45; i < 48; i++) {
 				fields[i] = Marble.BLACK;
 			}
 			for (int i = 50; i < 61; i++) {
 				fields[i] = Marble.BLACK;
 			}
-		}
-		else if (players == 3) {
-			for (int i = 0; i<11;i++) {
+		} else if (players == 3) {
+			for (int i = 0; i < 11; i++) {
 				fields[i] = Marble.BLUE;
 			}
 			fields[18] = Marble.WHITE;
 			fields[25] = Marble.BLACK;
 			for (int i = 4; i < horizontal.length; i++) {
-				fields[getIndex(horizontal[i], i-3)] = Marble.WHITE;
-				fields[getIndex(horizontal[i], i-2)] = Marble.WHITE;
+				fields[getIndex(horizontal[i], i - 3)] = Marble.WHITE;
+				fields[getIndex(horizontal[i], i - 2)] = Marble.WHITE;
 				fields[getIndex(horizontal[i], 8)] = Marble.BLACK;
 				fields[getIndex(horizontal[i], 9)] = Marble.BLACK;
 			}
-		}
-		else if (players == 4) {
-			for (int i=1; i<5; i++) {
+		} else if (players == 4) {
+			for (int i = 1; i < 5; i++) {
 				fields[i] = Marble.BLUE;
 			}
 			fields[5] = Marble.WHITE;
-			for (int i=7; i<10; i++) {
+			for (int i = 7; i < 10; i++) {
 				fields[i] = Marble.BLUE;
 			}
 			fields[11] = Marble.WHITE;
@@ -388,12 +488,15 @@ public class Board {
 				fields[i] = Marble.RED;
 			}
 		}
-		for (int i=0; i < size; i++) {
-			if (fields[i] == null) fields[i] = Marble.EMPTY;
+		for (int i = 0; i < size; i++) {
+			if (fields[i] == null) {
+				fields[i] = Marble.EMPTY;
+			}
 		}
 	}
+	
 	/**
-	 * Gives a textual representation of the board
+	 * Gives a textual representation of the board.
 	 * (Uses unicode, so might appear a little off depending on your font)
 	 */
 	public String toString() {
@@ -401,30 +504,46 @@ public class Board {
 		int index = 0;
 		int max;
 		String line = "";
-		for (int i=0; i<6; i++) {
+		for (int i = 0; i < 6; i++) {
 			sb.append(SPACE);
 		}
 		sb.append(BBORDER);
-		for (int i=0; i < 9; i++) {
+		for (int i = 0; i < 9; i++) {
 			line = "";
-			for (int j=0; j < Math.abs(i-4); j++) line += SPACE;
-			line += horizontal[i] + " ";
-			if (i<4) line += RBORDER;
-			else if (i == 4) line += LINE;
-			else line += LBORDER;
-			for (int j=0; j < (max = 9 - Math.abs(i-4)); j++) {
-				line += getRep(getMarble(index));
-				index++;
-				if (j < max - 1) line += LINE;
+			for (int j = 0; j < Math.abs(i - 4); j++) {
+				line += SPACE;
 			}
-			if (i<4) line += LBORDER + " " + (i+6);
-			else if (i == 4) line += LINE;
-			else line += RBORDER;
+			line += horizontal[i] + " ";
+			if (i < 4) {
+				line += RBORDER;
+			} else if (i == 4) {
+				line += LINE;
+			} else {
+				line += LBORDER;
+			}
+			for (int j = 0; j < (max = 9 - Math.abs(i - 4)); j++) {
+				try {
+					line += getRep(getMarble(index));
+				} catch (OffBoardException e) {
+					//literally can't happen, but error if try/catch clause not added
+				}
+				index++;
+				if (j < max - 1) {
+					line += LINE;
+				}
+			}
+			if (i < 4) {
+				line += LBORDER + " " + (i + 6);
+			} else if (i == 4) {
+				line += LINE;
+			} else {
+				line += RBORDER;
+			}
 			line += ENTER;
 			sb.insert(0,line);
 		}
 		line = "";
-		for (int i=0; i<15; i++) {
+		for (int i = 0; i < 15; i++) {
 			line += SPACE;
 		}
 		line += UBORDER + ENTER;

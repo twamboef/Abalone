@@ -1,4 +1,4 @@
-package Server;
+package server;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,24 +9,27 @@ public class ServerTUI implements ServerView {
 	
 	private PrintWriter consoleout;
 	private BufferedReader consolein;
+	
 	/**
-	 * Creates a new ServerTUI
+	 * Creates a new ServerTUI.
 	 * @ensures new ServerTUI object with autoflushing PrintWriter
 	 */
 	public ServerTUI() {
 		consoleout = new PrintWriter(System.out, true);
 		consolein = new BufferedReader(new InputStreamReader(System.in));
 	}
+	
 	/**
-	 * Prints message to console
+	 * Prints message to console.
 	 * @param message to show in console
 	 */
 	@Override
 	public void showMessage(String message) {
 		consoleout.println(message);
 	}
+	
 	/**
-	 * Asks for string through console
+	 * Asks for string through console.
 	 * @param question to show user
 	 */
 	@Override
@@ -41,6 +44,10 @@ public class ServerTUI implements ServerView {
 		return result;
 	}
 
+	/**
+	 * Asks for an integer through console.
+	 * @param question to show user
+	 */
 	@Override
 	public int getInt(String question) {
 		showMessage(question);
@@ -58,6 +65,10 @@ public class ServerTUI implements ServerView {
 		return result;
 	}
 	
+	/**
+	 * Asks for a yes/no answer through console.
+	 * @param question to show user
+	 */
 	@Override
 	public boolean getBoolean(String question) {
 		showMessage(question);
@@ -68,8 +79,12 @@ public class ServerTUI implements ServerView {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			if (result.equals("y") || result.equals("yes")) return true;
-			if (result.equals("n") || result.equals("no")) return false;
+			if (result.equals("y") || result.equals("yes")) {
+				return true;
+			}
+			if (result.equals("n") || result.equals("no")) {
+				return false;
+			}
 			showMessage("Please answer with y/yes or n/no");
 		}
 	}

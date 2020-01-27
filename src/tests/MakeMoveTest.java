@@ -1,18 +1,20 @@
-package Tests;
+package tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import Game.Board;
-import Game.HumanPlayer;
-import Game.Marble;
-import Game.Player;
+import game.Board;
+import game.HumanPlayer;
+import game.Marble;
+import game.Player;
 
 class MakeMoveTest {
-	Player player1, player2;
-	Board board2, testpushboard;
+	Player player1;
+	Player player2;
+	Board board2;
+	Board testpushboard;
 	
 	@BeforeEach
 	void setUp() {
