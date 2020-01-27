@@ -16,7 +16,7 @@ public class ClientHandler implements Runnable {
     private Socket sock;
     private Server server;
     private String name;
-    private int wins = 0;
+    private int points = 0;
     private boolean connected = false;
     private boolean inLobby = false;
     private boolean ready = false;
@@ -28,20 +28,19 @@ public class ClientHandler implements Runnable {
      * @param server server to connect to
      * @param name   of the ClientHandler
      */
-    public ClientHandler(Socket sock, Server server, String name) {
+    public ClientHandler(Socket sock, Server server) {
         try {
             in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
             this.sock = sock;
             this.server = server;
-            this.name = name;
         } catch (IOException e) {
             shutDown();
         }
     }
 
     /**
-     * What a ClientHandler should do when start() is called.
+     * Keeps waiting for user input and handles it.
      */
     public void run() {
         String message;
@@ -75,14 +74,15 @@ public class ClientHandler implements Runnable {
         if (splitmsg.length > 3) {
             parm3 = splitmsg[3];
         }
-        if (!command.equals("CONNECT") && connected == false) {
+        if (connected == false && !command.equals("CONNECT")) {
             out.write(
                     command + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED + ProtocolMessages.DELIMITER);
             return;
         }
         switch (command) {
             case ProtocolMessages.CONNECT:
-                String result = server.getConnect(parm1);
+                name = parm1;
+                String result = server.getConnect(name);
                 if (result.split(ProtocolMessages.DELIMITER)[1].equals("200")) {
                     connected = true;
                 }
@@ -209,8 +209,12 @@ public class ClientHandler implements Runnable {
         out.write(line);
     }
     
-    private void addWin() {
-        wins++;
+    public void addPoints(int points) {
+        this.points += points;
+    }
+    
+    public int getPoints() {
+        return points;
     }
 
     private void shutDown() {

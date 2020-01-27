@@ -19,9 +19,9 @@ import protocol.ServerProtocol;
 public class Server implements Runnable, ServerProtocol {
     private ServerSocket ssock;
     private List<ClientHandler> clients;
-    private ServerTUI view;
     private List<Lobby> lobbies;
     private List<Game> games;
+    private ServerTUI view;
 
     /**
      * String consisting of ";200;".
@@ -30,6 +30,8 @@ public class Server implements Runnable, ServerProtocol {
 
     public Server() {
         clients = new ArrayList<>();
+        lobbies = new ArrayList<>();
+        games = new ArrayList<>();
         view = new ServerTUI();
     }
 
@@ -41,13 +43,12 @@ public class Server implements Runnable, ServerProtocol {
                 setup();
                 while (true) {
                     Socket sock = ssock.accept();
-                    String name = view.getString("What is your name?");
-                    view.showMessage("New clientHandler [" + name + "] connected!");
-                    ClientHandler handler = new ClientHandler(sock, this, name);
+                    view.showMessage("New client connected!");
+                    ClientHandler handler = new ClientHandler(sock, this);
                     new Thread(handler).start();
                     clients.add(handler);
                 }
-            } catch (ExitProgram e1) {
+            } catch (ExitProgram e) {
                 openNewSocket = false;
             } catch (IOException e) {
                 System.out.println("A server IO error occurred: " + e.getMessage());
@@ -56,7 +57,7 @@ public class Server implements Runnable, ServerProtocol {
                 }
             }
         }
-        view.showMessage("See you later!");
+        view.showMessage("Already miss you!");
     }
 
     /**
@@ -117,7 +118,6 @@ public class Server implements Runnable, ServerProtocol {
     private boolean isInLobby(String name) {
         return getClientHandler(name).isInLobby();
     }
-    // TODO check parameters
 
     @Override
     public String getConnect(String name) {
@@ -308,6 +308,27 @@ public class Server implements Runnable, ServerProtocol {
         } catch (NullPointerException e) {
             winner = "";
         }
+        if (!winner.equals("")) {
+            getClientHandler(winner).addPoints(3);
+            if (game.getPlayerAmount() == 4) {
+                String teamMate = null;
+                for (int i = 0; i < 4; i++) {
+                    if (game.getPlayers()[i].getName().equals(winner)) {
+                        if (i <= 1) {
+                            teamMate = game.getPlayers()[i+2].getName();
+                        } else {
+                            teamMate = game.getPlayers()[i-2].getName();
+                        }
+                    }
+                }
+                getClientHandler(teamMate).addPoints(3);
+            }
+        } else {
+            for (Player p : game.getPlayers()) {
+                getClientHandler(p.getName()).addPoints(1);
+            }
+        }
+        games.remove(game);
         return ProtocolMessages.FINISH + ProtocolMessages.DELIMITER + winner + ProtocolMessages.DELIMITER;
     }
 
