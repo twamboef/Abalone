@@ -7,7 +7,7 @@ public interface ServerProtocol {
 
     public abstract String getConnect(String name);
 
-    public abstract String createLobby(String name, int size);
+    public abstract String createLobby(String lobbyname, String player, String size);
 
     public abstract String getLobbyList();
 

@@ -3,7 +3,7 @@ package game;
 import exceptions.OffBoardException;
 
 public class Game {
-    public static int NUMBER_PLAYERS = 2;
+    public static int playerAmount;
     private Board board;
     private Player[] players;
     private int current;
@@ -17,6 +17,7 @@ public class Game {
      * @ensures board != null
      */
     public Game(Player p1, Player p2) {
+        playerAmount = 2;
         board = new Board(2);
         players = new Player[2];
         players[0] = p1;
@@ -33,6 +34,7 @@ public class Game {
      * @ensures board != null
      */
     public Game(Player p1, Player p2, Player p3) {
+        playerAmount = 3;
         board = new Board(3);
         players = new Player[3];
         players[0] = p1;
@@ -51,6 +53,7 @@ public class Game {
      * @ensures board != null
      */
     public Game(Player p1, Player p2, Player p3, Player p4) {
+        playerAmount = 4;
         board = new Board(4);
         players = new Player[4];
         players[0] = p1;
@@ -99,6 +102,44 @@ public class Game {
     }
 
     /**
+     * Makes a player forfeit the game.
+     * This results in an instant win in case of 2 and 4 player games.
+     * @param player who wants to forfeit
+     */
+    public void playerForfeit(String player) {
+        Player pl = null;
+        for (Player p : players) {
+            if (p.getName().equals(player)) {
+               pl = p;
+            }
+        }
+        if (playerAmount == 2) {
+            for (Player p : players) {
+                if (pl.getMarble().next(2) == p.getMarble()) {
+                    p.setPoints(6);
+                }
+            }
+        } else if (playerAmount == 3) {
+            Player[] newPlayers = new Player[2];
+            int current = 0;
+            for (Player p : players) {
+                if (p != pl) {
+                    newPlayers[current] = p;
+                    current++;
+                }
+            }
+            board.removeMarbles(pl);
+            players = newPlayers;
+        } else {
+            for (Player p : players) {
+                if (pl.getMarble().next(4) == p.getMarble()) {
+                    p.setPoints(6);
+                }
+            }
+        }
+    }
+
+    /**
      * Checks if the game is over (there is a winner or 96 turns have passed).
      * 
      * @requires players.length >= 2 && players.length <= 4
@@ -116,6 +157,15 @@ public class Game {
      */
     public Player currentPlayer() {
         return players[current];
+    }
+
+    /**
+     * Returns the player amount of this game.
+     * 
+     * @return playerAmount
+     */
+    public int getPlayerAmount() {
+        return playerAmount;
     }
 
     public Player[] getPlayers() {

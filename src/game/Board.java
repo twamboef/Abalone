@@ -42,13 +42,24 @@ public class Board {
      * @return copy of this board
      * @throws OffBoardException (can't happen because hard coded)
      */
-
     public Board deepCopy() throws OffBoardException {
         Board copy = new Board(players);
         for (int i = 0; i < size; i++) {
             copy.setField(i, this.getMarble(i));
         }
         return copy;
+    }
+    
+    /**
+     * Removes all the marbles of a player (upon forfeit).
+     * @param player whose marbles need to be removed
+     */
+    public void removeMarbles(Player player) {
+        for (int i = 0; i < fields.length; i++) {
+            if (fields[i] == player.getMarble()) {
+                fields[i] = Marble.EMPTY;
+            }
+        }
     }
 
     /**

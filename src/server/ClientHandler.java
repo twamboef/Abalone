@@ -1,7 +1,5 @@
 package server;
 
-import exceptions.OffBoardException;
-import game.Game;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -18,6 +16,7 @@ public class ClientHandler implements Runnable {
     private Socket sock;
     private Server server;
     private String name;
+    private int wins = 0;
     private boolean connected = false;
     private boolean inLobby = false;
     private boolean ready = false;
@@ -90,7 +89,7 @@ public class ClientHandler implements Runnable {
                 out.write(result);
                 break;
             case ProtocolMessages.CREATE:
-                out.write(server.createLobby(parm1, Integer.parseInt(parm2)));
+                out.write(server.createLobby(parm1, name, parm2));
                 break;
             case ProtocolMessages.LISTL:
                 out.write(server.getLobbyList());
@@ -117,19 +116,16 @@ public class ClientHandler implements Runnable {
                 break;
             case ProtocolMessages.MOVE:
                 String move;
-                out.write(server.makeMove(name,
-                        (move = parm1 + ProtocolMessages.DELIMITER + parm2 + ProtocolMessages.DELIMITER + parm3)));
-                List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
-                for (String p : server.getLobby(name).getPlayers()) {
-                    clientHandlers.add(server.getClientHandler(p));
-                }
-                // TODO SHOULD BE SENT TO CLIENT INSTEAD OF CLIENTHANDLER
-                for (ClientHandler ch : clientHandlers) {
-                    ch.processMove(server.sendMove(name, move));
+                result = server.makeMove(name,
+                        (move = parm1 + ProtocolMessages.DELIMITER + parm2 + ProtocolMessages.DELIMITER + parm3));
+                out.write(result);
+                if (result.contains("200")) {
+                    writeToGameClients(server.sendMove(name, move));
                 }
                 break;
             case ProtocolMessages.FORFEIT:
                 out.write(server.playerForfeit(name));
+                server.getGame(name).playerForfeit(name);
                 break;
             case ProtocolMessages.LISTP:
                 break;
@@ -178,23 +174,43 @@ public class ClientHandler implements Runnable {
         inLobby = false;
     }
 
-    // TODO UNDERLYING METHOD SHOULD BE IN CLIENT
-    /**
-     * Called by another ClientHandler, allowing this ClientHandler to change the
-     * board according to a move.
-     * 
-     * @param line from another player containing move, e.g. "MOVE;Twan;5,G;7,G;4;"
-     */
-    public void processMove(String line) {
-        String[] movesplit = line.split(ProtocolMessages.DELIMITER);
-        String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
-                + movesplit[4];
-        Game game = server.getGame(name);
-        try {
-            game.currentPlayer().setFields(game.getBoard(), move);
-        } catch (OffBoardException e) {
-            // Client should always send correct move
+//    // TODO UNDERLYING METHOD SHOULD BE IN CLIENT
+//    /**
+//     * Called by another ClientHandler, allowing this ClientHandler to change the
+//     * board according to a move.
+//     * 
+//     * @param line from another player containing move, e.g. "MOVE;Twan;5,G;7,G;4;"
+//     */
+//    public void processMove(String line) {
+//        String[] movesplit = line.split(ProtocolMessages.DELIMITER);
+//        String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
+//                + movesplit[4];
+//        Game game = server.getGame(name);
+//        try {
+//            game.currentPlayer().setFields(game.getBoard(), move);
+//        } catch (OffBoardException e) {
+//            // Client should always send correct move
+//        }
+//    }
+    
+    private void writeToGameClients(String line) throws IOException {
+        List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+        for (String p : server.getLobby(name).getPlayers()) {
+            if (!p.equals(name)) {
+                clientHandlers.add(server.getClientHandler(p));
+            }
         }
+        for (ClientHandler ch : clientHandlers) {
+             ch.writeLine(line);
+        }
+    }
+    
+    private void writeLine(String line) throws IOException {
+        out.write(line);
+    }
+    
+    private void addWin() {
+        wins++;
     }
 
     private void shutDown() {

@@ -121,10 +121,6 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String getConnect(String name) {
-        if (name == null) {
-            return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
-                    + ProtocolMessages.DELIMITER;
-        }
         for (ClientHandler clientHandler : clients) {
             if (clientHandler.getName().equals(name)) {
                 return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED
@@ -136,9 +132,16 @@ public class Server implements Runnable, ServerProtocol {
     }
 
     @Override
-    public String createLobby(String lobbyname, int size) {
-        if (lobbyname == null) {
-            return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
+    public String createLobby(String lobbyname, String player, String lobbysize) {
+        int size;
+        try {
+            size = Integer.parseInt(lobbysize);
+        } catch (NumberFormatException e) {
+            return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
+                    + ProtocolMessages.DELIMITER;
+        }
+        if (lobbyname == null || lobbyname.equals("")) {
+            return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
                     + ProtocolMessages.DELIMITER;
         }
         for (Lobby lobby : lobbies) {
@@ -147,7 +150,9 @@ public class Server implements Runnable, ServerProtocol {
                         + ProtocolMessages.DELIMITER;
             }
         }
-        lobbies.add(new Lobby(lobbyname, size));
+        Lobby lobby = new Lobby(lobbyname, size);
+        lobby.join(player);
+        lobbies.add(lobby);
         return ProtocolMessages.CREATE + delimSuccess;
     }
 
@@ -165,6 +170,10 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String joinLobby(String name, String lobbyname) {
+        if (lobbyname == null || lobbyname.equals("")) {
+            return ProtocolMessages.JOIN + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
+                    + ProtocolMessages.DELIMITER;
+        }
         for (Lobby lobby : lobbies) {
             if (lobby.getName().equals(lobbyname) && lobby.isJoinable() && !isInLobby(name)) {
                 lobby.join(name);
@@ -212,6 +221,7 @@ public class Server implements Runnable, ServerProtocol {
                 + ProtocolMessages.DELIMITER;
     }
 
+    //TODO write this to clients when sb joins or leaves a lobby
     @Override
     public String lobbyChanged(Lobby lobby) {
         String result = ProtocolMessages.CHANGE + ProtocolMessages.DELIMITER;
@@ -238,7 +248,7 @@ public class Server implements Runnable, ServerProtocol {
      * @requires lobby.getSize() == lobby.getPlayers().length
      * @return newly made game
      */
-    public Game createGame(Lobby lobby) {
+    private Game createGame(Lobby lobby) {
         String current;
         Player p1 = new HumanPlayer((current = lobby.getPlayers().get(0)), Marble.BLACK);
         if (current.equals("-BOT")) {
