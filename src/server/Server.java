@@ -131,7 +131,7 @@ public class Server implements Runnable, ServerProtocol {
             }
         }
         clients.add(getClientHandler(name));
-        return ProtocolMessages.CONNECT + delimSuccess;
+        return ProtocolMessages.CONNECT + delimSuccess + ProtocolMessages.DELIMITER;
     }
 
     @Override
@@ -359,8 +359,12 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String playerForfeit(String name) {
-        // if (getClientHandler(name).)
-        return null;
+        if (getGame(name) != null) {
+            getGame(name).playerForfeit(name);
+            return ProtocolMessages.FORFEIT + delimSuccess;
+        }
+        return ProtocolMessages.FORFEIT + ProtocolMessages.DELIMITER 
+                + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
     }
 
     @Override

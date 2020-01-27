@@ -173,24 +173,24 @@ public class ClientHandler implements Runnable {
         inLobby = false;
     }
 
-//    // TODO UNDERLYING METHOD SHOULD BE IN CLIENT
-//    /**
-//     * Called by another ClientHandler, allowing this ClientHandler to change the
-//     * board according to a move.
-//     * 
-//     * @param line from another player containing move, e.g. "MOVE;Twan;5,G;7,G;4;"
-//     */
-//    public void processMove(String line) {
-//        String[] movesplit = line.split(ProtocolMessages.DELIMITER);
-//        String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
-//                + movesplit[4];
-//        Game game = server.getGame(name);
-//        try {
-//            game.currentPlayer().setFields(game.getBoard(), move);
-//        } catch (OffBoardException e) {
-//            // Client should always send correct move
-//        }
-//    }
+    //    // TODO UNDERLYING METHOD SHOULD BE IN CLIENT
+    //    /**
+    //     * Called by another ClientHandler, allowing this ClientHandler to change the
+    //     * board according to a move.
+    //     * 
+    //     * @param line from another player containing move, e.g. "MOVE;Twan;5,G;7,G;4;"
+    //     */
+    //    public void processMove(String line) {
+    //        String[] movesplit = line.split(ProtocolMessages.DELIMITER);
+    //        String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
+    //                + movesplit[4];
+    //        Game game = server.getGame(name);
+    //        try {
+    //            game.currentPlayer().setFields(game.getBoard(), move);
+    //        } catch (OffBoardException e) {
+    //            // Client should always send correct move
+    //        }
+    //    }
     
     private void writeToGameClients(String line) throws IOException {
         List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
