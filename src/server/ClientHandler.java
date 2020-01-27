@@ -22,10 +22,10 @@ public class ClientHandler implements Runnable {
 	private boolean ready = false;
 	
 	/**
-	 * Constructor for the clienthandler.
+	 * Constructor for the ClientHandler.
 	 * @param sock socket
 	 * @param server server to connect to
-	 * @param name of the clienthandler
+	 * @param name of the ClientHandler
 	 */
 	public ClientHandler(Socket sock, Server server, String name) {
 		try {
@@ -42,7 +42,7 @@ public class ClientHandler implements Runnable {
 	}
 	
 	/**
-	 * What a clienthandler should do when start() is called.
+	 * What a ClientHandler should do when start() is called.
 	 */
 	public void run() {
 		String message;

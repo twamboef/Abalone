@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.OffBoardException;
+
 public class Game {
 	public static int NUMBER_PLAYERS = 2;
 	private Board board;
@@ -61,7 +63,11 @@ public class Game {
 	 * @requires board != null
 	 */
 	public void start() {
-		board.reset();
+		try {
+			board.reset();
+		} catch (OffBoardException e) {
+			e.printStackTrace();
+		}
 		play();
 		printResult();
 	}

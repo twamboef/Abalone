@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.OffBoardException;
+
 public abstract class Player {
 	private String name;
 	protected Marble marble;
@@ -22,6 +24,10 @@ public abstract class Player {
 		return points;
 	}
 	
+	public void setMarble(Marble marble) {
+		this.marble = marble;
+	}
+	
 	public void setPoints(int points) {
 		this.points = points;
 	}
@@ -35,8 +41,9 @@ public abstract class Player {
 	 * @param dia diagonal coordinate
 	 * @param dir direction
 	 * @return index of field marble is going to
+	 * @throws OffBoardException if index is invalid
 	 */
-	public int marbleTo(Board board, char hor, int dia, Direction dir) {
+	public int marbleTo(Board board, char hor, int dia, Direction dir) throws OffBoardException {
 		int hori = (new String(board.horizontal)).indexOf(hor);
 		int result = -1;
 		try {
@@ -59,7 +66,7 @@ public abstract class Player {
 		return result;
 	}
 	
-	public int marbleTo(Board board, int i, Direction dir) {
+	public int marbleTo(Board board, int i, Direction dir) throws OffBoardException {
 		String[] coords = board.getCoords(i).split(",");
 		return marbleTo(board, coords[0].charAt(0), Integer.parseInt(coords[1]), dir);
 	}
@@ -70,8 +77,9 @@ public abstract class Player {
 	 * @param move with first coordinate, last coordinate and direction
 	 * @requires String move of form (e.g.) "5,A;5,B;1"
 	 * @return move is inLine or not (returns no if only one marble is moving)
+	 * @throws OffBoardException if getIndex throws this exception
 	 */
-	public boolean isInLine(Board board, String move) {
+	public boolean isInLine(Board board, String move) throws OffBoardException {
 		String[] movesplit = move.split(";");
 		String[] first = movesplit[0].split(",");
 		String[] last = movesplit[1].split(",");
@@ -102,8 +110,9 @@ public abstract class Player {
 	 * @param board of the game
 	 * @param move non-fixed move string
 	 * @return move with leading first
+	 * @throws OffBoardException if getIndex or marbleTo throws this exception
 	 */
-	public String makeLeadingFirst(Board board, String move) {
+	public String makeLeadingFirst(Board board, String move) throws OffBoardException {
 		String[] movesplit = move.split(";");
 		String[] first = movesplit[0].split(",");
 		String[] last = movesplit[1].split(",");
@@ -126,8 +135,9 @@ public abstract class Player {
 	 * @requires isValidMoove(board,move)
 	 * @param board of the game
 	 * @param move of a player
+	 * @throws OffBoardException if getIndex or marbleTo throws this exception
 	 */
-	public void setFields(Board board, String move) { //e.g. 5,A;5,B;1
+	public void setFields(Board board, String move) throws OffBoardException { //e.g. 5,A;5,B;1
 		String[] movesplit = move.split(";");
 		String[] first = movesplit[0].split(",");
 		String[] last = movesplit[1].split(",");
@@ -196,6 +206,10 @@ public abstract class Player {
 	
 	public void makeMove(Board board) {
 		String move = determineMove(board);
-		setFields(board,move);
+		try {
+			setFields(board,move);
+		} catch (OffBoardException e) {
+			e.printStackTrace();
+		}
 	}
 }

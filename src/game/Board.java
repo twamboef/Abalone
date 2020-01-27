@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.OffBoardException;
+
 public class Board {
 	public static final int size = 61;
 	public static final String SPACE = "  ";
@@ -24,7 +26,11 @@ public class Board {
 	public Board(int players) {
 		fields = new Marble[size];
 		this.players = players;
-		reset();
+		try {
+			reset();
+		} catch (OffBoardException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -32,9 +38,10 @@ public class Board {
      * @ensures new object (not this object)
      * @ensures the values of all fields of the copy match the ones of this board
      * @return copy of this board
+	 * @throws OffBoardException (can't happen because hard coded)
      */
 	
-	public Board deepCopy() {
+	public Board deepCopy() throws OffBoardException {
 		Board copy = new Board(players);
 		for (int i = 0; i < size; i++) {
 			copy.setField(i, this.getMarble(i));
@@ -46,8 +53,9 @@ public class Board {
 	 * Calculates how many marbles a player has on the board.
 	 * @param marble the marble of the player
 	 * @return amount of marbles of this player that have not been pushed off
+	 * @throws OffBoardException if index is invalid
 	 */
-	public int getNRofMarbles(Marble marble) {
+	public int getNRofMarbles(Marble marble) throws OffBoardException {
 		int j = 0;
 		for (int i = 0; i < 61; i++) {
 			if (getMarble(i) == marble) {
@@ -62,11 +70,12 @@ public class Board {
 	 * @param hor horizontal coordinate
 	 * @param dia diagonal coordinate
 	 * @ensures result == -1 || fields[result] != null
-	 * @return index if valid, -1 if invalid
+	 * @return index for hor,dia combination
+	 * @throws OffBoardException if hor,dia combination is not a valid index on the board
 	 */
-	public int getIndex(char hor, int dia) {
+	public int getIndex(char hor, int dia) throws OffBoardException {
 		if (!isValidField(hor,dia)) {
-			return -1;
+			throw new OffBoardException("Invalid combination of horizontal and diagonal coordinate");
 		}
 		int index = new String(horizontal).indexOf(hor);
 		int result = 0;
@@ -87,9 +96,10 @@ public class Board {
 	/**
 	 * Converts an index to a combination of a horizontal and diagonal coordinate.
 	 * @param i index
-	 * @return String with coordinates if index is valid, null if invalid
+	 * @return String with coordinates for index i
+	 * @throws OffBoardException when index is invalid 
 	 */
-	public String getCoords(int i) {
+	public String getCoords(int i) throws OffBoardException {
 		if (i < 5) {
 			return "A," + (i + 1);
 		} else if (i < 11) {
@@ -109,7 +119,7 @@ public class Board {
 		} else if (i < 61) {
 			return "I," + (i - 56 + 5);
 		} else {
-			return null;
+			throw new OffBoardException("Invalid index");
 		}
 	}
 	
@@ -117,9 +127,14 @@ public class Board {
 	 * Returns the marble on the field given.
 	 * @param index of which to get the marble
 	 * @return marble if valid index, null if invalid
+	 * @throws OffBoardException if index is invalid
 	 */
-	public Marble getMarble(int index) {
-		return (index >= 0 && index < 61) ? fields[index] : null;
+	public Marble getMarble(int index) throws OffBoardException {
+		if (index >= 0 && index < 61) {
+			return fields[index];
+		} else {
+			throw new OffBoardException("Invalid index");
+		}
 	}
 	
 	/**
@@ -130,7 +145,11 @@ public class Board {
 	 * @return marble if valid index, null if invalid
 	 */
 	public Marble getMarble(char hor, int dia) {
-		return getMarble(getIndex(hor, dia));
+		try {
+			return getMarble(getIndex(hor, dia));
+		} catch (OffBoardException e) {
+			return null;
+		}
 	}
 	
 	/**
@@ -174,10 +193,16 @@ public class Board {
 	 * @requires i to be a valid index
 	 * @param i index of the field
 	 * @param m new marble for this field
+	 * @throws OffBoardException if index i is invalid
 	 * @ensures field i is set to marble m
 	 */
-	public void setField(int i, Marble m) {
-		fields[i] = m;
+	public void setField(int i, Marble m) throws OffBoardException {
+		try {
+			fields[i] = m;
+		}
+		catch (IndexOutOfBoundsException e) {
+			throw new OffBoardException("Invalid index");
+		}
 	}
 	
 	/**
@@ -186,9 +211,10 @@ public class Board {
 	 * @param hor Horizontal coordinate (A-I)
 	 * @param dia Diagonal coordinate (1-9)
 	 * @param m new marble for this field
+	 * @throws OffBoardException if index i is invalid
 	 * @ensures field (hor,dia) is set to marble m
 	 */
-	public void setField(char hor, int dia, Marble m) {
+	public void setField(char hor, int dia, Marble m) throws OffBoardException {
 		fields[getIndex(hor,dia)] = m;
 	}
 	
@@ -247,8 +273,9 @@ public class Board {
 	 * @requires isValidField(index)
 	 * @param index of a field
 	 * @return boolean if empty field
+	 * @throws OffBoardException if index is invalid
 	 */
-	public boolean isEmptyField(int index) {
+	public boolean isEmptyField(int index) throws OffBoardException {
 		return getMarble(index) == Marble.EMPTY;
 	}
 	
@@ -268,8 +295,9 @@ public class Board {
 	 * @param player to check it for
 	 * @param move to check for validity
 	 * @return boolean if valid move
+	 * @throws OffBoardException if getMarble() throws this exception
 	 */
-	public boolean isValidMove(Player player, String move) {
+	public boolean isValidMove(Player player, String move) throws OffBoardException {
 		int tempscore = player.getPoints();
 		Marble marble = player.getMarble();
 		Board copy = deepCopy();
@@ -396,8 +424,9 @@ public class Board {
 	 * Resets the board for the amount of players.
 	 * If the amount of players is not in the range of 2-4,
 	 * all fields are set to empty
+	 * @throws OffBoardException if getIndex throws this exception
 	 */
-	public void reset() {
+	public void reset() throws OffBoardException {
 		if (players == 2) {
 			for (int i = 0; i < 11; i++) {
 				fields[i] = Marble.WHITE;
@@ -493,7 +522,11 @@ public class Board {
 				line += LBORDER;
 			}
 			for (int j = 0; j < (max = 9 - Math.abs(i - 4)); j++) {
-				line += getRep(getMarble(index));
+				try {
+					line += getRep(getMarble(index));
+				} catch (OffBoardException e) {
+					//literally can't happen, but error if try/catch clause not added
+				}
 				index++;
 				if (j < max - 1) {
 					line += LINE;

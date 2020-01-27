@@ -42,18 +42,17 @@ public class Abalone {
 		Player p2 = new HumanPlayer(player2,Marble.WHITE);
 		game = new Game(p1,p2);
 		if (players == 3) {
-			p2 = new HumanPlayer(player3, Marble.BLUE);
-			p3 = new HumanPlayer(player4, Marble.WHITE);
+			p2.setMarble(Marble.BLUE);
+			p3 = new HumanPlayer(player3, Marble.WHITE);
 			game = new Game(p1,p2,p3);
 		} else if (players == 4) {
-			p1 = new HumanPlayer(player1, Marble.RED);
-			p2 = new HumanPlayer(player2, Marble.BLACK);
+			p1.setMarble(Marble.RED);
+			p2.setMarble(Marble.BLACK);
 			p3 = new HumanPlayer(player3, Marble.BLUE);
 			p4 = new HumanPlayer(player4, Marble.WHITE);
 			game = new Game(p1,p2,p3,p4);
 		}
 		game.start();
 		scanner.close();
-		
 	}
 }

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import exceptions.ExitProgram;
+import game.ComputerPlayer;
 import game.Game;
 import game.HumanPlayer;
 import game.Marble;
@@ -215,16 +216,41 @@ public class Server implements Runnable, ServerProtocol {
 
 	@Override
 	public String startGame(Lobby lobby) {
-		Player p1 = new HumanPlayer(lobby.getPlayers().get(1),Marble.WHITE);
-		if (lobby.getSize() == 2) {
-			if (lobby.getPlayers().size() == 2) {
-				//Game game = new Game(lobby.getPlayers().get(0), lobby.getPlayers().get(1));
+		String current;
+		Player p1 = new HumanPlayer((current = lobby.getPlayers().get(0)),Marble.BLACK);
+		if (current.equals("-BOT")) {
+			p1 = new ComputerPlayer("BOT",Marble.BLACK);
+		}
+		Player p2 = new HumanPlayer((current = lobby.getPlayers().get(1)),Marble.WHITE);
+		if (current.equals("-BOT")) {
+			p2 = new ComputerPlayer("BOT",Marble.WHITE);
+		}
+		Game game = new Game(p1,p2);
+		if (lobby.getSize() == 3) {
+			p2.setMarble(Marble.BLUE);
+			Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.WHITE);
+			if (current.equals("-BOT")) {
+				p3 = new ComputerPlayer("BOT",Marble.WHITE);
 			}
+			game = new Game(p1,p2,p3);
+		} else if (lobby.getSize() == 4) {
+			p1.setMarble(Marble.RED);
+			p2.setMarble(Marble.BLACK);
+			Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.BLUE);
+			if (current.equals("-BOT")) {
+				p3 = new ComputerPlayer("BOT",Marble.BLUE);
+			}
+			Player p4 = new HumanPlayer((current = lobby.getPlayers().get(2)),Marble.WHITE);
+			if (current.equals("-BOT")) {
+				p4 = new ComputerPlayer("BOT",Marble.WHITE);
+			}
+			game = new Game(p1,p2,p3,p4);
 		}
 		String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
 		for (String p : lobby.getPlayers()) {
 			result += p + ProtocolMessages.DELIMITER;
 		}
+		game.start();
 		return result;
 	}
 

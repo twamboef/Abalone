@@ -1,5 +1,6 @@
 package game;
 
+import exceptions.OffBoardException;
 import java.util.Scanner;
 
 public class HumanPlayer extends Player {
@@ -89,8 +90,17 @@ public class HumanPlayer extends Player {
 			System.out.println("\nPlease enter a number between 0 and 5\n");
 		}
 		String move = marble1 + ";" + marble2 + ";" + dir;
-		move = makeLeadingFirst(board,move);
-		boolean valid = board.isValidMove(this,move);
+		try {
+			move = makeLeadingFirst(board,move);
+		} catch (OffBoardException e) {
+			//board.isValidMove() will fix this
+		}
+		boolean valid = false;
+		try {
+			valid = board.isValidMove(this,move);
+		} catch (OffBoardException e) {
+			//will return false in case of exceptions
+		}
 		if (!valid) {
 			System.out.println("Invalid move, please try again\n");
 			move = determineMove(board);
