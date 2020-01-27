@@ -110,7 +110,7 @@ public class Game {
         Player pl = null;
         for (Player p : players) {
             if (p.getName().equals(player)) {
-               pl = p;
+                pl = p;
             }
         }
         if (playerAmount == 2) {

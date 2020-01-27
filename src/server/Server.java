@@ -28,6 +28,9 @@ public class Server implements Runnable, ServerProtocol {
      */
     private String delimSuccess = ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS + ProtocolMessages.DELIMITER;
 
+    /**
+     * Constructor for this class.
+     */
     public Server() {
         clients = new ArrayList<>();
         lobbies = new ArrayList<>();
@@ -202,7 +205,17 @@ public class Server implements Runnable, ServerProtocol {
         ClientHandler clientHandler = getClientHandler(name);
         if (clientHandler.isInLobby() && !clientHandler.isReady()) {
             clientHandler.ready();
-            getLobby(name).ready();
+            Lobby lobby = getLobby(name);
+            lobby.ready();
+            if (lobby.isReady()) {
+                try {
+                    for (String p : lobby.getPlayers()) {
+                        getClientHandler(p).writeLine(startGame(lobby));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             return ProtocolMessages.READY + delimSuccess;
         }
         return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -234,6 +247,9 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String startGame(Lobby lobby) {
         games.add(createGame(lobby));
+        for (String p : lobby.getPlayers()) {
+            getClientHandler(p).unready();
+        }
         String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
         for (String p : lobby.getPlayers()) {
             result += p + ProtocolMessages.DELIMITER;
@@ -285,10 +301,14 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
+            if (!getGame(name).getBoard().isValidMove(getGame(name).currentPlayer(), move)) {
+                return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                        + ProtocolMessages.DELIMITER;
+            }
             getGame(name).currentPlayer().setFields(getGame(name).getBoard(), move);
         } catch (OffBoardException e) {
-            return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
-                    + ProtocolMessages.DELIMITER;
+            e.printStackTrace();
+            // Can't happen because isValidMove is first called
         }
         return ProtocolMessages.MOVE + delimSuccess;
     }
@@ -315,9 +335,9 @@ public class Server implements Runnable, ServerProtocol {
                 for (int i = 0; i < 4; i++) {
                     if (game.getPlayers()[i].getName().equals(winner)) {
                         if (i <= 1) {
-                            teamMate = game.getPlayers()[i+2].getName();
+                            teamMate = game.getPlayers()[i + 2].getName();
                         } else {
-                            teamMate = game.getPlayers()[i-2].getName();
+                            teamMate = game.getPlayers()[i - 2].getName();
                         }
                     }
                 }

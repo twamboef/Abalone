@@ -10,9 +10,9 @@ public class Board {
     public static final String LBORDER = "/";
     public static final String RBORDER = "\\";
     public static final String UBORDER = 
-            "\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F\uFF3F";
+            "_________________";
     public static final String BBORDER = 
-            "\u203E1\u203E\u203E\u203E2\u203E\u203E\u203E3\u203E\u203E\u203E4\u203E\u203E\u203E5";
+            " 1   2   3   4   5";
     char[] horizontal = "ABCDEFGHI".toCharArray();
     int[] diagonal = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     private Marble[] fields;
@@ -570,7 +570,7 @@ public class Board {
             sb.insert(0, line);
         }
         line = "";
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 6; i++) {
             line += SPACE;
         }
         line += UBORDER + ENTER;

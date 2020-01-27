@@ -26,7 +26,6 @@ public class ClientHandler implements Runnable {
      * 
      * @param sock   socket
      * @param server server to connect to
-     * @param name   of the ClientHandler
      */
     public ClientHandler(Socket sock, Server server) {
         try {
@@ -201,16 +200,16 @@ public class ClientHandler implements Runnable {
             }
         }
         for (ClientHandler ch : clientHandlers) {
-             ch.writeLine(line);
+            ch.writeLine(line);
         }
     }
     
-    private void writeLine(String line) throws IOException {
+    public void writeLine(String line) throws IOException {
         out.write(line);
     }
     
-    public void addPoints(int points) {
-        this.points += points;
+    public void addPoints(int amount) {
+        points += amount;
     }
     
     public int getPoints() {
