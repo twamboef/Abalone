@@ -15,7 +15,7 @@ public class ClientHandler implements Runnable {
     private BufferedWriter out;
     private Socket sock;
     private Server server;
-    private String name;
+    private String name = "NewClient";
     private int points = 0;
     private boolean connected = false;
     private boolean inLobby = false;
@@ -80,12 +80,12 @@ public class ClientHandler implements Runnable {
         }
         switch (command) {
             case ProtocolMessages.CONNECT:
-                name = parm1;
-                String result = server.getConnect(name);
-                if (result.split(ProtocolMessages.DELIMITER)[1].equals("200")) {
+                String result;
+                if ((result = server.getConnect(parm1)).contains("200")) {
                     connected = true;
                 }
                 out.write(result);
+                name = parm1;
                 break;
             case ProtocolMessages.CREATE:
                 out.write(server.createLobby(parm1, name, parm2));
@@ -94,15 +94,13 @@ public class ClientHandler implements Runnable {
                 out.write(server.getLobbyList());
                 break;
             case ProtocolMessages.JOIN:
-                result = server.joinLobby(name, parm1);
-                out.write(result);
+                out.write(result = server.joinLobby(name, parm1));
                 if (result.contains("200")) {
                     joinLobby();
                 }
                 break;
             case ProtocolMessages.LEAVE:
-                result = server.leaveLobby(name);
-                out.write(result);
+                out.write(result = server.leaveLobby(name));
                 if (result.contains("200")) {
                     leaveLobby();
                 }
@@ -115,9 +113,9 @@ public class ClientHandler implements Runnable {
                 break;
             case ProtocolMessages.MOVE:
                 String move;
-                result = server.makeMove(name,
-                        (move = parm1 + ProtocolMessages.DELIMITER + parm2 + ProtocolMessages.DELIMITER + parm3));
-                out.write(result);
+                out.write(result = server.makeMove(name,
+                        (move = parm1 + ProtocolMessages.DELIMITER 
+                        + parm2 + ProtocolMessages.DELIMITER + parm3)));
                 if (result.contains("200")) {
                     writeToGameClients(server.sendMove(name, move));
                 }
@@ -127,14 +125,33 @@ public class ClientHandler implements Runnable {
                 server.getGame(name).playerForfeit(name);
                 break;
             case ProtocolMessages.LISTP:
+                out.write(server.getServerList());
                 break;
             case ProtocolMessages.CHALL:
+                out.write(result = server.challengePlayer(name, parm1));
+                if (result.contains("200")) {
+                    server.getClientHandler(parm1).writeLine(server.sendChallenge(name));
+                }
                 break;
             case ProtocolMessages.CHALLACC:
+                out.write(result = server.challengeAccept(name, parm1));
+                if (result.contains("200")) {
+                    server.getClientHandler(parm1).writeLine(server.sendChallengeAccept(name));
+                }
                 break;
             case ProtocolMessages.PM:
+                out.write(result = server.sendPM(parm1, parm2));
+                if (result.contains("200")) {
+                    server.getClientHandler(parm1).writeLine(server.receivePM(name, parm2));
+                }
                 break;
             case ProtocolMessages.LMSG:
+                out.write(result = server.sendLM(name, parm1));
+                if (result.contains("200")) {
+                    for (String p : server.getLobby(name).getPlayers()) {
+                        server.getClientHandler(p).writeLine(server.receiveLM(name, parm1));
+                    }
+                }
                 break;
             case ProtocolMessages.LEADERBOARD:
                 break;

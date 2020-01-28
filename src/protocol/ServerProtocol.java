@@ -39,11 +39,11 @@ public interface ServerProtocol {
 
     public abstract String challengeAccept(String accepter, String challenger);
 
-    public abstract String sendPM(String sender, String receiver, String message);
+    public abstract String sendPM(String receiver, String message);
 
-    public abstract String receivePM(String receiver, String sender, String message);
+    public abstract String receivePM(String sender, String message);
 
-    public abstract String sendLM(String sender, String message);
+    public abstract String sendLM(String name, String message);
 
     public abstract String receiveLM(String sender, String message);
 

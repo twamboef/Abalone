@@ -74,7 +74,7 @@ public class Server implements Runnable, ServerProtocol {
             int port = view.getInt("What port would you like to use?");
             try { // try to open a new ServerSocket
                 view.showMessage("Attempting to open a socket at 127.0.0.1 on port " + port + "...");
-                ssock = new ServerSocket(port, 0, InetAddress.getByName("127.0.0.1"));
+                ssock = new ServerSocket(port, 0, InetAddress.getByName("0.0.0.0"));
                 view.showMessage("Server started at port " + port);
             } catch (IOException e) {
                 view.showMessage("ERROR: cannot create a socket at 127.0.0.1 and port " + port + ".");
@@ -125,8 +125,8 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String getConnect(String name) {
         for (ClientHandler clientHandler : clients) {
-            if (clientHandler.getName().equals(name)) {
-                return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED
+            if (clientHandler != null && clientHandler.getName().equals(name)) {
+                return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
         }
@@ -164,7 +164,7 @@ public class Server implements Runnable, ServerProtocol {
         String result = ProtocolMessages.LISTL + delimSuccess;
         for (Lobby lobby : lobbies) {
             if (lobby.isJoinable()) {
-                result += lobby.getName() + ProtocolMessages.COMMA + lobby.getSize() + ProtocolMessages.COMMA
+                result += lobby.getName() + ProtocolMessages.SEPERATOR + lobby.getSize() + ProtocolMessages.SEPERATOR
                         + lobby.getPlayers().size() + ProtocolMessages.DELIMITER;
             }
         }
@@ -369,50 +369,89 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String getServerList() {
-        // TODO Auto-generated method stub
-        return null;
+        String result = ProtocolMessages.LISTP + delimSuccess;
+        for (ClientHandler ch : clients) {
+            result += ch.getName() + ProtocolMessages.DELIMITER;
+        }
+        return result;
     }
 
     @Override
     public String challengePlayer(String challenger, String target) {
-        // TODO Auto-generated method stub
-        return null;
+        if (getClientHandler(target) == null || getGame(target) != null) {
+            return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
+                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+        }
+        return ProtocolMessages.CHALL + delimSuccess;
     }
 
+    public String sendChallenge(String challenger) {
+        return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
+                + challenger + ProtocolMessages.DELIMITER;
+    }
+    
     @Override
     public String challengeAccept(String accepter, String challenger) {
-        // TODO Auto-generated method stub
-        return null;
+        Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(),2);
+        lobbies.add(lobby);
+        lobby.join(accepter);
+        lobby.join(challenger);
+        getClientHandler(accepter).joinLobby();
+        getClientHandler(challenger).joinLobby();
+        return ProtocolMessages.CHALLACC + delimSuccess;
+    }
+
+    public String sendChallengeAccept(String accepter) {
+        return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER
+                + accepter + ProtocolMessages.DELIMITER;
+    }
+    
+    @Override
+    public String sendPM(String receiver, String message) {
+        if (message.equals("")) {
+            return ProtocolMessages.PM + ProtocolMessages.DELIMITER 
+                    + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
+        }
+        if (getClientHandler(receiver) == null) {
+            return ProtocolMessages.PM + ProtocolMessages.DELIMITER 
+                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+        }
+        return ProtocolMessages.PM + delimSuccess;
     }
 
     @Override
-    public String sendPM(String sender, String receiver, String message) {
-        // TODO Auto-generated method stub
-        return null;
+    public String receivePM(String sender, String message) {
+        return ProtocolMessages.PMRECV + ProtocolMessages.DELIMITER + sender 
+                + ProtocolMessages.DELIMITER + message + ProtocolMessages.DELIMITER;
     }
 
     @Override
-    public String receivePM(String receiver, String sender, String message) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String sendLM(String sender, String message) {
-        // TODO Auto-generated method stub
-        return null;
+    public String sendLM(String name, String message) {
+        if (getLobby(name) == null) {
+            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER 
+                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER; 
+        }
+        if (message.equals("")) {
+            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER 
+            + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
+        }
+        return ProtocolMessages.LMSG + delimSuccess;
     }
 
     @Override
     public String receiveLM(String sender, String message) {
-        // TODO Auto-generated method stub
-        return null;
+        return ProtocolMessages.LMSGRECV + ProtocolMessages.DELIMITER + sender
+                + ProtocolMessages.DELIMITER + message + ProtocolMessages.DELIMITER;
     }
 
     @Override
     public String getLeaderboard() {
-        // TODO Auto-generated method stub
-        return null;
+        String result = ProtocolMessages.LEADERBOARD + delimSuccess;
+        for (ClientHandler p : clients) {
+            result += p.getName() + ProtocolMessages.SEPERATOR 
+                    + p.getPoints() + ProtocolMessages.DELIMITER;
+        }
+        return result;
     }
 
     public void removeClient(ClientHandler clientHandler) {

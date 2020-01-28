@@ -7,9 +7,9 @@ public class ProtocolMessages {
     public static final String DELIMITER = ";";
 
     /**
-     * Delimiter for CSV (comma separated values).
+     * Seperator for CSV (comma separated values).
      */
-    public static final String COMMA = ",";
+    public static final String SEPERATOR = ",";
 
     /**
      * Sent as last line in a multi-line response to indicate the end of the text.
