@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
-import Game.Game;
+import game.Game;
 import exceptions.OffBoardException;
 import protocol.ClientProtocol;
 import protocol.ProtocolMessages;
@@ -75,72 +75,72 @@ public class Client implements ClientProtocol{
 
 	@Override
 	public void connect(String name) {
-		sendMessage(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name);
+		sendMessage(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
-	public void createLobby(String name, int size) {
-		sendMessage(ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER + size);
+	public void createLobby(String lobbyname, int size) {
+		sendMessage(ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER + size + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void getLobbyList() {
-		sendMessage(ProtocolMessages.LISTL);
+		sendMessage(ProtocolMessages.LISTL + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());		
 	}
 
 	@Override
 	public void joinLobby(String lobby) {
-		sendMessage(ProtocolMessages.JOIN + ProtocolMessages.DELIMITER + lobby);
+		sendMessage(ProtocolMessages.JOIN + ProtocolMessages.DELIMITER + lobby + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void leaveLobby() {
-		sendMessage(ProtocolMessages.LEAVE);
+		sendMessage(ProtocolMessages.LEAVE + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());		
 	}
 	
 	public void doReady() {
-		sendMessage(ProtocolMessages.READY);
+		sendMessage(ProtocolMessages.READY + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void doUnready() {
-		sendMessage(ProtocolMessages.UNREADY);
+		sendMessage(ProtocolMessages.UNREADY + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void makeMove(String move) {
-		sendMessage(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + move);
+		sendMessage(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void playerForfeit() {
-		sendMessage(ProtocolMessages.FORFEIT);
+		sendMessage(ProtocolMessages.FORFEIT + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void getServerList() {
-		sendMessage(ProtocolMessages.LISTP);
+		sendMessage(ProtocolMessages.LISTP + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void challengePlayer(String target) {
-		sendMessage(ProtocolMessages.CHALL + ProtocolMessages.DELIMITER + target);
+		sendMessage(ProtocolMessages.CHALL + ProtocolMessages.DELIMITER + target + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void challengeAccept(String challenger) {
-		sendMessage(ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER + challenger);
+		sendMessage(ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER + challenger + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
@@ -152,16 +152,16 @@ public class Client implements ClientProtocol{
 
 	@Override
 	public void sendLM(String message) {
-		sendMessage(ProtocolMessages.LMSG + ProtocolMessages.DELIMITER + message);
+		sendMessage(ProtocolMessages.LMSG + ProtocolMessages.DELIMITER + message + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
 
 	@Override
 	public void getLeaderboard() {
-		sendMessage(ProtocolMessages.LEADERBOARD);
+		sendMessage(ProtocolMessages.LEADERBOARD + ProtocolMessages.DELIMITER);
 		client.showMessage(readFromServer());
 	}
-	
+
 	
 	
 }

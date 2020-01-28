@@ -38,7 +38,7 @@ public class HumanPlayer extends Player {
     public String makeGoodInput(Board board, String input) {
         String[] marblesplit = input.split(",");
         String result = input;
-        while (marblesplit.length != 2) {
+        while (marblesplit.length != 2 || marblesplit[0].equals("") || marblesplit[1].equals("")) {
             System.out.println(
                     "> Please try again.\n  " + "Format: CHARACTER,INTEGER or INTEGER,CHARACTER\n  e.g. A,1 or 1,A");
             result = makeGoodFormat(scanner.nextLine().toUpperCase());
