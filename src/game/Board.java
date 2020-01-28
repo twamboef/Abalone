@@ -399,15 +399,15 @@ public class Board {
                 if (getMarble(lasthor, lastdiai) != marble) {
                     return false;
                 }
-                if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) {
-                    return true;
-                }
                 if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == marble) {
                     return false;
                 }
                 if (copy.getPlayers() == 4 && getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == teamMate) {
                     return false;
                 }
+            }
+            if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) {
+                return true;
             }
             int upTwoi = player.marbleTo(copy, player.marbleTo(copy, firsthor, firstdiai, dir), dir);
             Marble upTwo = getMarble(upTwoi);
