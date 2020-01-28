@@ -91,7 +91,7 @@ public class Board {
      */
     public int getIndex(char hor, int dia) throws OffBoardException {
         if (!isValidField(hor, dia)) {
-            throw new OffBoardException("Invalid combination of horizontal and diagonal coordinate");
+            return -1;
         }
         int index = new String(horizontal).indexOf(hor);
         int result = 0;
