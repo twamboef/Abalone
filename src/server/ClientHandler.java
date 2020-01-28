@@ -75,7 +75,7 @@ public class ClientHandler implements Runnable {
             parm3 = splitmsg[3];
         }
         if (connected == false && !command.equals("CONNECT")) {
-            out.write(
+            writeLine(
                     command + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED + ProtocolMessages.DELIMITER);
             return;
         }
@@ -85,36 +85,36 @@ public class ClientHandler implements Runnable {
                 if ((result = server.getConnect(parm1)).contains("200")) {
                     connected = true;
                 }
-                out.write(result);
+                writeLine(result);
                 name = parm1;
                 break;
             case ProtocolMessages.CREATE:
-                out.write(server.createLobby(parm1, name, parm2));
+                writeLine(server.createLobby(parm1, name, parm2));
                 break;
             case ProtocolMessages.LISTL:
-                out.write(server.getLobbyList());
+                writeLine(server.getLobbyList());
                 break;
             case ProtocolMessages.JOIN:
-                out.write(result = server.joinLobby(name, parm1));
+                writeLine(result = server.joinLobby(name, parm1));
                 if (result.contains("200")) {
                     joinLobby();
                 }
                 break;
             case ProtocolMessages.LEAVE:
-                out.write(result = server.leaveLobby(name));
+                writeLine(result = server.leaveLobby(name));
                 if (result.contains("200")) {
                     leaveLobby();
                 }
                 break;
             case ProtocolMessages.READY:
-                out.write(server.doReady(name));
+                writeLine(server.doReady(name));
                 break;
             case ProtocolMessages.UNREADY:
-                out.write(server.doUnready(name));
+                writeLine(server.doUnready(name));
                 break;
             case ProtocolMessages.MOVE:
                 String move;
-                out.write(result = server.makeMove(name,
+                writeLine(result = server.makeMove(name,
                         (move = parm1 + ProtocolMessages.DELIMITER 
                         + parm2 + ProtocolMessages.DELIMITER + parm3)));
                 if (result.contains("200")) {
@@ -122,32 +122,32 @@ public class ClientHandler implements Runnable {
                 }
                 break;
             case ProtocolMessages.FORFEIT:
-                out.write(server.playerForfeit(name));
+                writeLine(server.playerForfeit(name));
                 server.getGame(name).playerForfeit(name);
                 break;
             case ProtocolMessages.LISTP:
-                out.write(server.getServerList());
+                writeLine(server.getServerList());
                 break;
             case ProtocolMessages.CHALL:
-                out.write(result = server.challengePlayer(name, parm1));
+                writeLine(result = server.challengePlayer(name, parm1));
                 if (result.contains("200")) {
                     server.getClientHandler(parm1).writeLine(server.sendChallenge(name));
                 }
                 break;
             case ProtocolMessages.CHALLACC:
-                out.write(result = server.challengeAccept(name, parm1));
+                writeLine(result = server.challengeAccept(name, parm1));
                 if (result.contains("200")) {
                     server.getClientHandler(parm1).writeLine(server.sendChallengeAccept(name));
                 }
                 break;
             case ProtocolMessages.PM:
-                out.write(result = server.sendPM(parm1, parm2));
+                writeLine(result = server.sendPM(parm1, parm2));
                 if (result.contains("200")) {
                     server.getClientHandler(parm1).writeLine(server.receivePM(name, parm2));
                 }
                 break;
             case ProtocolMessages.LMSG:
-                out.write(result = server.sendLM(name, parm1));
+                writeLine(result = server.sendLM(name, parm1));
                 if (result.contains("200")) {
                     for (String p : server.getLobby(name).getPlayers()) {
                         server.getClientHandler(p).writeLine(server.receiveLM(name, parm1));
@@ -157,7 +157,7 @@ public class ClientHandler implements Runnable {
             case ProtocolMessages.LEADERBOARD:
                 break;
             default:
-                out.write(command + ProtocolMessages.DELIMITER 
+                writeLine(command + ProtocolMessages.DELIMITER 
                         + ProtocolMessages.NOT_FOUND + ProtocolMessages.DELIMITER);
                 break;
         }
@@ -223,7 +223,8 @@ public class ClientHandler implements Runnable {
     }
     
     public void writeLine(String line) throws IOException {
-        out.write(line);
+        System.out.println("--> Sent: " + line);
+        out.write("[Server] " + line);
     }
     
     public void addPoints(int amount) {
@@ -242,6 +243,10 @@ public class ClientHandler implements Runnable {
             sock.close();
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        server.leaveLobby(name);
+        if (server.getGame(name) != null) {
+            server.getGame(name).playerForfeit(name);
         }
         server.removeClient(this);
     }

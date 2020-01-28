@@ -19,6 +19,8 @@ public class Lobby {
     public Lobby(String name, int size) {
         this.name = name;
         this.size = size;
+        readyAmount = 0;
+        joinable = true;
         players = new ArrayList<>();
     }
 

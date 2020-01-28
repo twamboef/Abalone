@@ -2,10 +2,13 @@ package client;
 
 import java.net.InetAddress;
 
+import exceptions.ProtocolException;
+import exceptions.ServerUnavailableException;
+
 public interface ClientView{
-	public  void start();
+	public  void start() throws ServerUnavailableException, ProtocolException;
 	
-	public void handleUserInput(String input);
+	public void handleUserInput(String input) throws ServerUnavailableException, ProtocolException;
 	/*
 	 * writes the message to the output
 	 * @param the message

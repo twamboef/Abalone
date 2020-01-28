@@ -50,7 +50,7 @@ public class Server implements Runnable, ServerProtocol {
                     Socket sock = ssock.accept();
                     String name = "NewClient " 
                             + String.format("%02d", next_client_no++);
-                    view.showMessage("New client connected!");
+                    view.showMessage("[" + name + "] connected!");
                     ClientHandler handler = new ClientHandler(sock, this, name);
                     new Thread(handler).start();
                     clients.add(handler);
@@ -77,11 +77,11 @@ public class Server implements Runnable, ServerProtocol {
         while (ssock == null) {
             int port = view.getInt("What port would you like to use?");
             try { // try to open a new ServerSocket
-                view.showMessage("Attempting to open a socket at 127.0.0.1 on port " + port + "...");
+                view.showMessage("Attempting to open a socket on port " + port + "...");
                 ssock = new ServerSocket(port, 0, InetAddress.getByName("0.0.0.0"));
                 view.showMessage("Server started at port " + port);
             } catch (IOException e) {
-                view.showMessage("ERROR: cannot create a socket at 127.0.0.1 and port " + port + ".");
+                view.showMessage("ERROR: cannot create a socket on port " + port + ".");
                 if (!view.getBoolean("Do you want to try again?")) {
                     throw new ExitProgram("User indicated to exit the program.");
                 }
@@ -98,7 +98,7 @@ public class Server implements Runnable, ServerProtocol {
      */
     public ClientHandler getClientHandler(String name) {
         for (ClientHandler clientHandler : clients) {
-            if (clientHandler.getName().equals(name)) {
+            if (clientHandler != null && clientHandler.getName().equals(name)) {
                 return clientHandler;
             }
         }
@@ -198,6 +198,9 @@ public class Server implements Runnable, ServerProtocol {
         if (lobby != null) {
             getClientHandler(name).leaveLobby();
             lobby.leave(name);
+            if (lobby.getPlayers().size() == 0) {
+                lobbies.remove(lobby);
+            }
             return ProtocolMessages.LEAVE + delimSuccess;
         }
         return ProtocolMessages.LEAVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -287,15 +290,13 @@ public class Server implements Runnable, ServerProtocol {
             }
             game = new Game(p1, p2, p3);
         } else if (lobby.getSize() == 4) {
-            p1.setMarble(Marble.RED);
-            p2.setMarble(Marble.BLACK);
             Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)), Marble.BLUE);
             if (current.equals("-BOT")) {
                 p3 = new ComputerPlayer("BOT_P3", Marble.BLUE);
             }
-            Player p4 = new HumanPlayer((current = lobby.getPlayers().get(3)), Marble.WHITE);
+            Player p4 = new HumanPlayer((current = lobby.getPlayers().get(3)), Marble.RED);
             if (current.equals("-BOT")) {
-                p4 = new ComputerPlayer("BOT_P4", Marble.WHITE);
+                p4 = new ComputerPlayer("BOT_P4", Marble.RED);
             }
             game = new Game(p1, p2, p3, p4);
         }
