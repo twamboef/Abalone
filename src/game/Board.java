@@ -419,6 +419,14 @@ public class Board {
                 if (copy.getPlayers() == 4 && getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == teamMate) {
                     return false;
                 }
+            } else {
+                if (copy.getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) != Marble.EMPTY
+                        || copy.getMarble(player.marbleTo(copy, lasthor, lastdiai, dir)) != Marble.EMPTY) {
+                    return false;
+                }
+                if (hasThree && copy.getMarble(player.marbleTo(copy, ball2, dir)) != Marble.EMPTY) {
+                    return false;
+                }
             }
             if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == Marble.EMPTY) {
                 return true;
@@ -440,16 +448,6 @@ public class Board {
                 }
                 if (copy.getPlayers() == 4 && upTwo == teamMate) {
                     return false;
-                }
-            } else {
-                if (!player.isInLine(copy,move)) {
-                    if (copy.getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) != Marble.EMPTY
-                            || copy.getMarble(player.marbleTo(copy, lasthor, lastdiai, dir)) != Marble.EMPTY) {
-                        return false;
-                    }
-                    if (hasThree && copy.getMarble(player.marbleTo(copy, ball2, dir)) != Marble.EMPTY) {
-                        return false;
-                    }
                 }
             }
             player.setFields(copy, move);
