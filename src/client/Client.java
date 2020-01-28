@@ -25,7 +25,7 @@ public class Client implements ClientProtocol {
 
     ClientTUI TUI;
 
-    public Client() {
+    public Client() throws IOException {
         TUI = new ClientTUI(this);
     }
 

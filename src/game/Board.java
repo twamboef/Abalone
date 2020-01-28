@@ -442,12 +442,14 @@ public class Board {
                     return false;
                 }
             } else {
-                if (copy.getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) != Marble.EMPTY
-                        || copy.getMarble(player.marbleTo(copy, lasthor, lastdiai, dir)) != Marble.EMPTY) {
-                    return false;
-                }
-                if (hasThree && copy.getMarble(player.marbleTo(copy, ball2, dir)) != Marble.EMPTY) {
-                    return false;
+                if (!player.isInLine(copy,move)) {
+                    if (copy.getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) != Marble.EMPTY
+                            || copy.getMarble(player.marbleTo(copy, lasthor, lastdiai, dir)) != Marble.EMPTY) {
+                        return false;
+                    }
+                    if (hasThree && copy.getMarble(player.marbleTo(copy, ball2, dir)) != Marble.EMPTY) {
+                        return false;
+                    }
                 }
             }
             player.setFields(copy, move);
