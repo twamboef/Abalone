@@ -1,5 +1,8 @@
 package game;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import exceptions.OffBoardException;
 
 public class Board {
@@ -78,6 +81,17 @@ public class Board {
         }
         return j;
     }
+    
+    public List<Integer> getMyMarbles(Marble marble) {
+    	List<Integer> getMyMarbles = new ArrayList<Integer>();
+    for(int i = 0; i < Board.size; i++) {
+    	if(getMarble(i) == marble ) {
+    		getMyMarbles.add(i);
+    	}
+    	}
+	return getMyMarbles;
+    }
+    
 
     /**
      * Converts a combination of horizontal and diagonal coordinate to index.

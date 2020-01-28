@@ -35,21 +35,49 @@ public class Abalone {
             System.out.println("Player 4, what is your name?");
             player4 = scanner.nextLine();
         }
+        Player p1;
+        Player p2;
         Player p3;
         Player p4;
         Game game;
-        Player p1 = new HumanPlayer(player1, Marble.BLACK);
-        Player p2 = new HumanPlayer(player2, Marble.WHITE);
+        if (player1.equals("-BOT")) {
+        	p1 = new ComputerPlayer(player1, Marble.BLACK);
+        }
+        else {
+            p1 = new HumanPlayer(player1, Marble.BLACK);
+        }
+        if (player2.equals("-BOT")) {
+        	p2 = new ComputerPlayer(player2, Marble.WHITE);
+        }
+        else {
+            p2 = new HumanPlayer(player2, Marble.WHITE);
+
+        }
         game = new Game(p1, p2);
         if (players == 3) {
-            p2.setMarble(Marble.BLUE);
-            p3 = new HumanPlayer(player3, Marble.WHITE);
+        	p2.setMarble(Marble.BLUE);
+        	if (player3.equals("-BOT")) {
+        		p3 = new ComputerPlayer(player3, Marble.WHITE);
+        	}
+        	else {
+        		 p3 = new HumanPlayer(player3, Marble.WHITE);
+        	}
             game = new Game(p1, p2, p3);
         } else if (players == 4) {
             p1.setMarble(Marble.RED);
             p2.setMarble(Marble.BLACK);
-            p3 = new HumanPlayer(player3, Marble.BLUE);
-            p4 = new HumanPlayer(player4, Marble.WHITE);
+            if (player3.equals("-BOT")) {
+            	p3 = new ComputerPlayer(player3, Marble.BLUE);
+            }
+            else {
+                p3 = new HumanPlayer(player3, Marble.BLUE);
+            }
+            if (player4.equals("-BOT")) {
+            	p4 = new ComputerPlayer(player4, Marble.WHITE);
+            }
+            else {
+                p4 = new HumanPlayer(player4, Marble.WHITE);
+            }
             game = new Game(p1, p2, p3, p4);
         }
         game.start();

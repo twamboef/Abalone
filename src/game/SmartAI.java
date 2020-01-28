@@ -2,23 +2,15 @@ package game;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import exceptions.OffBoardException;
 
-public class SmartAI implements Strategy  {
+public class SmartAI {
 
-	@Override
 	public String determineMove(Board board, Marble marble) {
-		List<Integer> empty = new ArrayList<Integer>();
-		for (int i = 0; i < 61; i ++) {
-			try {
-                if (board.isEmptyField(i)) {
-                	empty.add(i);
-                }
-            } catch (OffBoardException e) {
-               // If field is OffBoard, which can't happen because i < 61
-            }
-		}
+		List<Integer> myMarbles = new ArrayList<Integer>();
+		myMarbles = board.getMyMarbles(marble);
 		
 		//check if you can win the game
 		Board copy = null;
@@ -27,46 +19,11 @@ public class SmartAI implements Strategy  {
         } catch (OffBoardException e) {
            // Hard coded, so won't happen
         }
-			if(board.getPlayers() == 2) {
-				Marble oppmarble = Marble.BLACK;
-				if(marble == Marble.BLACK) {
-					oppmarble = Marble.WHITE;
-				}
-				for(int j = 0; j <= 61; j++) {
-					try {
-                        copy.setField(j, marble);
-                    } catch (OffBoardException e) {
-                        e.printStackTrace();
-                        // If j is not a valid index
-                    }
-					if(empty.contains(j)) {
-						try {
-                            if(board.getNRofMarbles(oppmarble) == 8) {
-                            	// maak die zet, maar hoe krijg je 2e of 3e marble????
-                            }
-                        } catch (OffBoardException e) {
-                           // Hard coded
-                        }
-					}
-				}
-		}
-			if(board.getPlayers() == 3) {
-				Marble opp1marble = Marble.BLACK;
-				Marble opp2marble = Marble.WHITE;
-				if(marble == Marble.BLACK) {
-					opp1marble = Marble.BLUE;
-				}
-				else if(marble == Marble.WHITE) {
-					opp2marble = Marble.BLUE;
-				}
-				for(int j = 0; j < empty.size(); j++) {
-					
-				}
-			}
 		
 		//makes a random move
-		int m1 = empty.get((int) (Math.random()*empty.size()));
-		int m2 = empty.get((int) (Math.random()*empty.size()));
+        Random rand = new Random();
+		int m1 = rand.nextInt(myMarbles.size());
+		int m2 = rand.nextInt(myMarbles.size());
 		int d = (int) (6.00 * Math.random());
 		Direction dir = null;
 		if(d == 0) {
