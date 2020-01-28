@@ -298,12 +298,12 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
-            if (!getGame(name).getBoard().isValidMove(getGame(name).currentPlayer(), 
-                    getGame(name).currentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
+            if (!getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
+                    getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
-            getGame(name).currentPlayer().setFields(getGame(name).getBoard(), move);
+            getGame(name).getCurrentPlayer().setFields(getGame(name).getBoard(), move);
         } catch (OffBoardException e) {
             e.printStackTrace();
             // Can't happen because isValidMove is first called
@@ -319,7 +319,7 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String gameFinish(Game game) {
-        lobbies.remove(getLobby(game.currentPlayer().getName()));
+        lobbies.remove(getLobby(game.getCurrentPlayer().getName()));
         String winner;
         try {
             winner = game.getWinner().getName();

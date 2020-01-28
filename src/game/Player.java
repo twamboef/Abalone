@@ -67,9 +67,17 @@ public abstract class Player {
         return result;
     }
 
-    public int marbleTo(Board board, int i, Direction dir) throws OffBoardException {
-        String[] coords = board.getCoords(i).split(",");
-        return marbleTo(board, coords[0].charAt(0), Integer.parseInt(coords[1]), dir);
+    public int marbleTo(Board board, int i, Direction dir) {
+        String[] coords;
+        int result;
+        try {
+            coords = board.getCoords(i).split(",");
+            result = marbleTo(board, coords[0].charAt(0), Integer.parseInt(coords[1]), dir);
+        }
+        catch (OffBoardException e) {
+            return -1;
+        }
+        return result;
     }
 
     /**
@@ -161,9 +169,12 @@ public abstract class Player {
             int toMarblei;
             if ((toMarble = board.getMarble((toMarblei = marbleTo(board, firsthor, firstdiai, dir)))) == Marble.EMPTY) {
                 board.setField(toMarblei, board.getMarble(firsthor, firstdiai));
-                board.setField(firsthor, firstdiai, board.getMarble(ball2));
-                board.setField(ball2, marble);
+                board.setField(firsthor, firstdiai, board.getMarble(lasthor,lastdiai));
                 board.setField(board.getIndex(lasthor, lastdiai), Marble.EMPTY);
+                if (hasThree) {
+                    board.setField(firsthor, firstdiai, board.getMarble(ball2));
+                    board.setField(ball2, marble);
+                    }
             } else { // if bumping into another player
                 upTwo = marbleTo(board, toMarblei, dir);
                 upThree = marbleTo(board, upTwo, dir);
@@ -174,10 +185,10 @@ public abstract class Player {
                 }
                 upTwo = marbleTo(board, toMarblei, dir);
                 upThree = marbleTo(board, upTwo, dir);
-                if (upThree != -1) {
+                if (hasThree && board.isValidField(upThree)) {
                     board.setField(upThree, board.getMarble(upTwo));
                 }
-                if (upTwo != -1) {
+                if (board.isValidField(upTwo)) {
                     board.setField(upTwo, toMarble);
                 }
                 board.setField(toMarblei, board.getMarble(firsthor, firstdiai));

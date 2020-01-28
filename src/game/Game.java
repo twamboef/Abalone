@@ -6,7 +6,7 @@ public class Game {
     public static int playerAmount;
     private Board board;
     private Player[] players;
-    private int current;
+    private Marble current;
     private int turnCount;
 
     /**
@@ -22,7 +22,8 @@ public class Game {
         players = new Player[2];
         players[0] = p1;
         players[1] = p2;
-        current = 0;
+        current = Marble.BLACK;
+        turnCount = 0;
     }
 
     /**
@@ -40,7 +41,8 @@ public class Game {
         players[0] = p1;
         players[1] = p2;
         players[2] = p3;
-        current = 0;
+        current = Marble.BLACK;
+        turnCount = 0;
     }
 
     /**
@@ -60,7 +62,7 @@ public class Game {
         players[1] = p2;
         players[2] = p3;
         players[3] = p4;
-        current = 0;
+        current = Marble.BLACK;
         turnCount = 0;
     }
 
@@ -87,16 +89,20 @@ public class Game {
     public void play() {
         System.out.println(board.toString());
         while (!gameOver()) {
-            players[current].makeMove(board);
-            for (Player p : players) {
-                System.out.println(p.getName() + "'s points: " + p.getPoints());
+            getCurrentPlayer().makeMove(board);
+            if (playerAmount != 4) {
+                for (Player p : players) {
+                    System.out.println(p.getName() + "'s points: " + p.getPoints());
+                }
+            } else {
+                System.out.println("Team " + players[0].getName() + " & " + players[1].getName() 
+                        + "'s points: " + (players[0].getPoints() + players[1].getPoints()));
+                System.out.println("Team " + players[2].getName() + " & " + players[3].getName() 
+                        + "'s points: " + (players[2].getPoints() + players[3].getPoints()));
             }
             System.out.println(board.toString());
-            current++;
+            current = current.next(playerAmount);
             turnCount++;
-            if (current >= players.length) {
-                current = 0;
-            }
         }
 
     }
@@ -151,15 +157,6 @@ public class Game {
     }
 
     /**
-     * Returns the player who is now in turn.
-     * 
-     * @return Player whose turn it is right now
-     */
-    public Player currentPlayer() {
-        return players[current];
-    }
-
-    /**
      * Returns the player amount of this game.
      * 
      * @return playerAmount
@@ -170,6 +167,20 @@ public class Game {
 
     public Player[] getPlayers() {
         return players;
+    }
+    
+    /**
+     * Returns the player who is now in turn.
+     * 
+     * @return Player whose turn it is right now
+     */
+    public Player getCurrentPlayer() {
+        for (Player p : players) {
+            if (p.getMarble() == current) {
+                return p;
+            }
+        }
+        return null;
     }
 
     public Board getBoard() {

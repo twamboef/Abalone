@@ -64,8 +64,6 @@ public class Abalone {
         	}
             game = new Game(p1, p2, p3);
         } else if (players == 4) {
-            p1.setMarble(Marble.RED);
-            p2.setMarble(Marble.BLACK);
             if (player3.equals("-BOT")) {
             	p3 = new ComputerPlayer(player3, Marble.BLUE);
             }
@@ -73,10 +71,10 @@ public class Abalone {
                 p3 = new HumanPlayer(player3, Marble.BLUE);
             }
             if (player4.equals("-BOT")) {
-            	p4 = new ComputerPlayer(player4, Marble.WHITE);
+            	p4 = new ComputerPlayer(player4, Marble.RED);
             }
             else {
-                p4 = new HumanPlayer(player4, Marble.WHITE);
+                p4 = new HumanPlayer(player4, Marble.RED);
             }
             game = new Game(p1, p2, p3, p4);
         }

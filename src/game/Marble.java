@@ -1,7 +1,7 @@
 package game;
 
 public enum Marble {
-    EMPTY, BLACK, WHITE, RED, BLUE;
+    EMPTY, BLACK, WHITE, BLUE, RED;
 
     /**
      * Returns the marble for the next turn.
