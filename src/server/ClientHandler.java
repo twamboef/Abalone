@@ -15,8 +15,8 @@ public class ClientHandler implements Runnable {
     private BufferedWriter out;
     private Socket sock;
     private Server server;
-    private String name = "NewClient";
     private int points = 0;
+    private String name;
     private boolean connected = false;
     private boolean inLobby = false;
     private boolean ready = false;
@@ -27,12 +27,13 @@ public class ClientHandler implements Runnable {
      * @param sock   socket
      * @param server server to connect to
      */
-    public ClientHandler(Socket sock, Server server) {
+    public ClientHandler(Socket sock, Server server, String name) {
         try {
             in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
             this.sock = sock;
             this.server = server;
+            this.name = name;
         } catch (IOException e) {
             shutDown();
         }

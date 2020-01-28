@@ -147,11 +147,11 @@ public class Board {
      * @return marble if valid index, null if invalid
      * @throws OffBoardException if index is invalid
      */
-    public Marble getMarble(int index) throws OffBoardException {
+    public Marble getMarble(int index) {
         if (index >= 0 && index < 61) {
             return fields[index];
         } else {
-            throw new OffBoardException("Invalid index");
+            return null;
         }
     }
 
@@ -356,7 +356,6 @@ public class Board {
         }
         boolean hasThree = false;
         try {
-            hasThree = false;
             int ball2 = -1;
             Marble teamMate = marble.next(4).next(4);
             for (int i = 0; i < 6 && !hasThree; i++) { // test if moving three balls
@@ -549,11 +548,7 @@ public class Board {
                 line += LBORDER;
             }
             for (int j = 0; j < (max = 9 - Math.abs(i - 4)); j++) {
-                try {
-                    line += getRep(getMarble(index));
-                } catch (OffBoardException e) {
-                    // literally can't happen, but error if try/catch clause not added
-                }
+                line += getRep(getMarble(index));
                 index++;
                 if (j < max - 1) {
                     line += LINE;

@@ -22,6 +22,7 @@ public class Server implements Runnable, ServerProtocol {
     private List<Lobby> lobbies;
     private List<Game> games;
     private ServerTUI view;
+    private int next_client_no;
 
     /**
      * String consisting of ";200;".
@@ -36,6 +37,7 @@ public class Server implements Runnable, ServerProtocol {
         lobbies = new ArrayList<>();
         games = new ArrayList<>();
         view = new ServerTUI();
+        next_client_no = 1;
     }
 
     @Override
@@ -46,8 +48,10 @@ public class Server implements Runnable, ServerProtocol {
                 setup();
                 while (true) {
                     Socket sock = ssock.accept();
+                    String name = "NewClient " 
+                            + String.format("%02d", next_client_no++);
                     view.showMessage("New client connected!");
-                    ClientHandler handler = new ClientHandler(sock, this);
+                    ClientHandler handler = new ClientHandler(sock, this, name);
                     new Thread(handler).start();
                     clients.add(handler);
                 }
