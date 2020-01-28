@@ -1,32 +1,61 @@
 package client;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
+import protocol.ProtocolMessages;
 
 public class ClientTUI implements ClientView {
     Client client;
-    BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    private BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
+    public BufferedReader in;
+    public BufferedWriter out;
 
-    public ClientTUI(Client cl) {
+    public ClientTUI(Client cl) throws IOException {
         this.client = cl;
+        in = new BufferedReader(new InputStreamReader(client.serverSocket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(client.serverSocket.getOutputStream()));
     }
 
-    public void start() throws ServerUnavailableException, ProtocolException {
+    public void start() throws ServerUnavailableException, ProtocolException, IOException {
         while (true) {
-            handleUserInput(getString("command: "));
+            String line = null;
+            if (systemIn.ready()) {
+                line = systemIn.readLine();
+                out.write(line);
+            }
+            while (in.ready()) {
+                handleServerMessage(in.readLine());
+            }
+            if (line != null) {
+                showMessage("Please enter a command.");
+            }
+        }
+    }
+
+    public void handleServerMessage(String serverMessage) {
+        String[] message = serverMessage.split(ProtocolMessages.DELIMITER);
+        String command = message[0];
+        String parm1 = message[1];
+        switch (command) {
+        case ProtocolMessages.CONNECT:
+            showMessage("Successfully connected");
         }
     }
 
     public void handleUserInput(String input) throws ServerUnavailableException, ProtocolException {
-        String[] clinput = input.split(";");
+        String[] clinput = input.split(ProtocolMessages.DELIMITER);
         String command = clinput[0];
-        String temp1 = "", temp2 = "", temp3 = "";
+        String temp1 = "";
+        String temp2 = "";
+        String temp3 = "";
         if (clinput.length > 1) {
             temp1 = clinput[1];
         }

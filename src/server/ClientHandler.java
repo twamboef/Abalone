@@ -31,9 +31,9 @@ public class ClientHandler implements Runnable {
         try {
             in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             out = new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+            this.name = name;
             this.sock = sock;
             this.server = server;
-            this.name = name;
         } catch (IOException e) {
             shutDown();
         }
@@ -47,10 +47,8 @@ public class ClientHandler implements Runnable {
         try {
             message = in.readLine();
             while (message != null) {
-                System.out.println("> [" + name + "] Incoming: " + message);
+                System.out.println("> [" + name + "] " + message);
                 handleCommand(message);
-                out.newLine();
-                out.flush();
                 message = in.readLine();
             }
             shutDown();
@@ -99,6 +97,13 @@ public class ClientHandler implements Runnable {
                 if (result.contains("200")) {
                     joinLobby();
                 }
+                Lobby lobby = server.getLobby(name);
+                ClientHandler ch;
+                for (String player : lobby.getPlayers()) {
+                    if ((ch = server.getClientHandler(player)) != server.getClientHandler(name)) {
+                        ch.writeLine(server.lobbyChanged(lobby));
+                    }
+                }
                 break;
             case ProtocolMessages.LEAVE:
                 writeLine(result = server.leaveLobby(name));
@@ -108,6 +113,17 @@ public class ClientHandler implements Runnable {
                 break;
             case ProtocolMessages.READY:
                 writeLine(server.doReady(name));
+                lobby = server.getLobby(name);
+                if (!lobby.isReady()) {
+                    break;
+                }
+                try {
+                    for (String p : lobby.getPlayers()) {
+                        server.getClientHandler(p).writeLine(server.startGame(lobby));
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 break;
             case ProtocolMessages.UNREADY:
                 writeLine(server.doUnready(name));
@@ -117,8 +133,10 @@ public class ClientHandler implements Runnable {
                 writeLine(result = server.makeMove(name,
                         (move = parm1 + ProtocolMessages.DELIMITER 
                         + parm2 + ProtocolMessages.DELIMITER + parm3)));
+                String line = server.sendMove(name, move);
+                writeLine(line);
                 if (result.contains("200")) {
-                    writeToGameClients(server.sendMove(name, move));
+                    writeToGameClients(line);
                 }
                 break;
             case ProtocolMessages.FORFEIT:
@@ -223,8 +241,10 @@ public class ClientHandler implements Runnable {
     }
     
     public void writeLine(String line) throws IOException {
-        System.out.println("--> Sent: " + line);
-        out.write("[Server] " + line);
+        System.out.println("--> Sent to " + name + ": "  + line);
+        out.write(line);
+        out.newLine();
+        out.flush();
     }
     
     public void addPoints(int amount) {

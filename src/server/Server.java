@@ -129,7 +129,7 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String getConnect(String name) {
         for (ClientHandler clientHandler : clients) {
-            if (clientHandler != null && clientHandler.getName().equals(name)) {
+            if (clientHandler != null && clientHandler.getName() != null && clientHandler.getName().equals(name)) {
                 return ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
@@ -159,6 +159,7 @@ public class Server implements Runnable, ServerProtocol {
         }
         Lobby lobby = new Lobby(lobbyname, size);
         lobby.join(player);
+        getClientHandler(player).joinLobby();
         lobbies.add(lobby);
         return ProtocolMessages.CREATE + delimSuccess;
     }
@@ -214,15 +215,6 @@ public class Server implements Runnable, ServerProtocol {
             clientHandler.ready();
             Lobby lobby = getLobby(name);
             lobby.ready();
-            if (lobby.isReady()) {
-                try {
-                    for (String p : lobby.getPlayers()) {
-                        getClientHandler(p).writeLine(startGame(lobby));
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
             return ProtocolMessages.READY + delimSuccess;
         }
         return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -306,7 +298,8 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
-            if (!getGame(name).getBoard().isValidMove(getGame(name).currentPlayer(), move)) {
+            if (!getGame(name).getBoard().isValidMove(getGame(name).currentPlayer(), 
+                    getGame(name).currentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
@@ -376,7 +369,9 @@ public class Server implements Runnable, ServerProtocol {
     public String getServerList() {
         String result = ProtocolMessages.LISTP + delimSuccess;
         for (ClientHandler ch : clients) {
-            result += ch.getName() + ProtocolMessages.DELIMITER;
+            if (ch != null) {
+                result += ch.getName() + ProtocolMessages.DELIMITER;
+            }
         }
         return result;
     }
