@@ -3,11 +3,12 @@ package client;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
 
 public interface ClientView{
-	public  void start() throws ServerUnavailableException, ProtocolException, IOException;
+	public  void start() throws ServerUnavailableException, ProtocolException, IOException, ExitProgram, InterruptedException;
 	
 	public void handleUserInput(String input) throws ServerUnavailableException, ProtocolException;
 	/*

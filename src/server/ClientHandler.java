@@ -20,6 +20,7 @@ public class ClientHandler implements Runnable {
     private boolean connected = false;
     private boolean inLobby = false;
     private boolean ready = false;
+    public String challengedBy = "";
 
     /**
      * Constructor for the ClientHandler.
@@ -82,9 +83,9 @@ public class ClientHandler implements Runnable {
                 String result;
                 if ((result = server.getConnect(parm1)).contains("200")) {
                     connected = true;
+                    name = parm1;
                 }
                 writeLine(result);
-                name = parm1;
                 break;
             case ProtocolMessages.CREATE:
                 writeLine(server.createLobby(parm1, name, parm2));
@@ -96,12 +97,12 @@ public class ClientHandler implements Runnable {
                 writeLine(result = server.joinLobby(name, parm1));
                 if (result.contains("200")) {
                     joinLobby();
-                }
-                Lobby lobby = server.getLobby(name);
-                ClientHandler ch;
-                for (String player : lobby.getPlayers()) {
-                    if ((ch = server.getClientHandler(player)) != server.getClientHandler(name)) {
-                        ch.writeLine(server.lobbyChanged(lobby));
+                    Lobby lobby = server.getLobby(name);
+                    ClientHandler ch;
+                    for (String player : lobby.getPlayers()) {
+                        if ((ch = server.getClientHandler(player)) != this) {
+                            ch.writeLine(server.lobbyChanged(lobby));
+                        }
                     }
                 }
                 break;
@@ -112,21 +113,32 @@ public class ClientHandler implements Runnable {
                 }
                 break;
             case ProtocolMessages.READY:
-                writeLine(server.doReady(name));
-                lobby = server.getLobby(name);
-                if (!lobby.isReady()) {
-                    break;
-                }
-                try {
+                writeLine(result = server.doReady(name));
+                if (result.contains("200")) {
+                    Lobby lobby = server.getLobby(name);
                     for (String p : lobby.getPlayers()) {
-                        server.getClientHandler(p).writeLine(server.startGame(lobby));
+                        server.getClientHandler(p).writeLine(server.readyChange(lobby));
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    if (!lobby.isReady()) {
+                        break;
+                    }
+                    try {
+                        for (String p : lobby.getPlayers()) {
+                            server.getClientHandler(p).writeLine(server.startGame(lobby));
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 break;
             case ProtocolMessages.UNREADY:
-                writeLine(server.doUnready(name));
+                writeLine(result = server.doUnready(name));
+                if (result.contains("200")) {
+                    Lobby lobby = server.getLobby(name);
+                    for (String p : lobby.getPlayers()) {
+                        server.getClientHandler(p).writeLine(server.readyChange(lobby));
+                    }
+                }
                 break;
             case ProtocolMessages.MOVE:
                 String move;
@@ -173,6 +185,7 @@ public class ClientHandler implements Runnable {
                 }
                 break;
             case ProtocolMessages.LEADERBOARD:
+                writeLine(server.getLeaderboard());
                 break;
             default:
                 writeLine(command + ProtocolMessages.DELIMITER 
@@ -208,25 +221,6 @@ public class ClientHandler implements Runnable {
     public void leaveLobby() {
         inLobby = false;
     }
-
-    //    // TODO UNDERLYING METHOD SHOULD BE IN CLIENT
-    //    /**
-    //     * Called by another ClientHandler, allowing this ClientHandler to change the
-    //     * board according to a move.
-    //     * 
-    //     * @param line from another player containing move, e.g. "MOVE;Twan;5,G;7,G;4;"
-    //     */
-    //    public void processMove(String line) {
-    //        String[] movesplit = line.split(ProtocolMessages.DELIMITER);
-    //        String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
-    //                + movesplit[4];
-    //        Game game = server.getGame(name);
-    //        try {
-    //            game.currentPlayer().setFields(game.getBoard(), move);
-    //        } catch (OffBoardException e) {
-    //            // Client should always send correct move
-    //        }
-    //    }
     
     private void writeToGameClients(String line) throws IOException {
         List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();

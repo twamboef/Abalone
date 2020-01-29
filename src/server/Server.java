@@ -151,8 +151,12 @@ public class Server implements Runnable, ServerProtocol {
             return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
                     + ProtocolMessages.DELIMITER;
         }
+        if (size < 2 || size > 4) {
+            return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                    + ProtocolMessages.DELIMITER;
+        }
         for (Lobby lobby : lobbies) {
-            if (lobby.getName().equals(lobbyname) || size < 2 || size > 4) {
+            if (lobby.getName().equals(lobbyname)) {
                 return ProtocolMessages.CREATE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
@@ -186,7 +190,11 @@ public class Server implements Runnable, ServerProtocol {
             if (lobby.getName().equals(lobbyname) && lobby.isJoinable() && !isInLobby(name)) {
                 lobby.join(name);
                 getClientHandler(name).joinLobby();
-                return ProtocolMessages.JOIN + delimSuccess;
+                String result = ProtocolMessages.JOIN + delimSuccess;
+                for (String p : lobby.getPlayers()) {
+                    result += p + ProtocolMessages.DELIMITER;
+                }
+                return result;
             }
         }
         return ProtocolMessages.JOIN + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -219,6 +227,11 @@ public class Server implements Runnable, ServerProtocol {
         }
         return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                 + ProtocolMessages.DELIMITER;
+    }
+    
+    public String readyChange(Lobby lobby) {
+        return ProtocolMessages.READY + ProtocolMessages.DELIMITER 
+        + lobby.getReadyAmount() + ProtocolMessages.DELIMITER;
     }
 
     @Override
@@ -298,7 +311,7 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
-            if (!getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
+            if (getGame(name) == null || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
                     getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
@@ -382,6 +395,7 @@ public class Server implements Runnable, ServerProtocol {
             return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
                     + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
         }
+        getClientHandler(target).challengedBy = challenger;
         return ProtocolMessages.CHALL + delimSuccess;
     }
 
@@ -392,6 +406,10 @@ public class Server implements Runnable, ServerProtocol {
     
     @Override
     public String challengeAccept(String accepter, String challenger) {
+        if (!getClientHandler(accepter).challengedBy.equals(challenger)) {
+            return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER
+                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+        }
         Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(),2);
         lobbies.add(lobby);
         lobby.join(accepter);
@@ -448,8 +466,10 @@ public class Server implements Runnable, ServerProtocol {
     public String getLeaderboard() {
         String result = ProtocolMessages.LEADERBOARD + delimSuccess;
         for (ClientHandler p : clients) {
-            result += p.getName() + ProtocolMessages.SEPERATOR 
+            if (p != null) {
+                    result += p.getName() + ProtocolMessages.SEPERATOR 
                     + p.getPoints() + ProtocolMessages.DELIMITER;
+            }
         }
         return result;
     }

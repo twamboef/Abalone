@@ -209,6 +209,28 @@ public class Game {
         return null;
     }
 
+    public Player getTeamMate(String name) {
+        if (playerAmount == 4) {
+            int index = -1;
+            for (int i = 0; i < 4; i++) {
+                if (players[i].getName().equals(name)) {
+                    index = i;
+                    break;
+                }
+            }
+            if (index == 0) {
+                return players[1];
+            } else if (index == 1) {
+                return players[0];
+            } else if (index == 2) {
+                return players[3];
+            } else if (index == 3) {
+                return players[2];
+            }
+        }
+        return null;
+    }
+    
     /**
      * Prints the result of the game to the standard output (winner/winners/draw).
      * 
