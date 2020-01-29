@@ -4,10 +4,10 @@ import exceptions.OffBoardException;
 
 public class Game {
     public static int playerAmount;
-    private Board board;
+    protected Board board;
     private Player[] players;
-    private Marble current;
-    private int turnCount;
+    protected Marble current;
+    protected int turnCount;
 
     /**
      * Creates game for 2 players.

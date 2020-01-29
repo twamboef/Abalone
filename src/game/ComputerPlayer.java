@@ -121,7 +121,7 @@ public class ComputerPlayer extends Player {
 					e.printStackTrace();
 				}
         		for(int dir = 0; dir < 6; dir++) {
-        			String move = marble1 + ";" + marble2 + ";" + dir;
+        			String move = makeGoodFormat(board,marble1) + ";" + makeGoodFormat(board, marble2) + ";" + dir;
         			
         			try {
 						if(board.isValidMove(this, move)) {
@@ -133,7 +133,7 @@ public class ComputerPlayer extends Player {
         	}
         }
         //randomly choose one of the possible moves
-        return makeGoodFormat(board, myMoves.get(rand.nextInt(myMoves.size())));
+        return myMoves.get(rand.nextInt(myMoves.size()));
     }
     
 }
