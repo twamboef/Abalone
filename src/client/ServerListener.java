@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 
+import exceptions.OffBoardException;
 import exceptions.ServerUnavailableException;
+import game.ServerGame;
 import protocol.ProtocolMessages;
 
 public class ServerListener implements Runnable {
@@ -169,7 +171,6 @@ public class ServerListener implements Runnable {
             break;
         case ProtocolMessages.MOVE:
             try {
-                
                 if (parm1.equals("200")) {
                     TUI.showMessage("Move accepted by server");
                 }
@@ -178,8 +179,12 @@ public class ServerListener implements Runnable {
                     TUI.showMessage("Move rejected by server");
                 }
             } catch (NumberFormatException e) {
-                TUI.showMessage(parm1 + " made move" + sinput[2] + ProtocolMessages.DELIMITER
-                        + sinput[3] + ProtocolMessages.DELIMITER + sinput[4]);
+                String move = sinput[2] + ProtocolMessages.DELIMITER
+                        + sinput[3] + ProtocolMessages.DELIMITER + sinput[4];
+                TUI.showMessage(parm1 + " made move" + move);
+                    synchronized (((ServerGame) client.getGame()).moveHappened) {
+                        ((ServerGame) client.getGame()).moveHappened.notifyAll();
+                    }
             }
             break;
         case ProtocolMessages.FINISH:

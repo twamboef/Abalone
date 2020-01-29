@@ -2,11 +2,14 @@ package server;
 
 import exceptions.ExitProgram;
 import exceptions.OffBoardException;
+import game.ClientPlayer;
 import game.ComputerPlayer;
 import game.Game;
 import game.HumanPlayer;
 import game.Marble;
 import game.Player;
+import game.ServerGame;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -277,33 +280,17 @@ public class Server implements Runnable, ServerProtocol {
      * @return newly made game
      */
     private Game createGame(Lobby lobby) {
-        String current;
-        Player p1 = new HumanPlayer((current = lobby.getPlayers().get(0)), Marble.BLACK);
-        if (current.equals("-BOT")) {
-            p1 = new ComputerPlayer("BOT_P1", Marble.BLACK);
-        }
-        Player p2 = new HumanPlayer((current = lobby.getPlayers().get(1)), Marble.WHITE);
-        if (current.equals("-BOT")) {
-            p2 = new ComputerPlayer("BOT_P2", Marble.WHITE);
-        }
-        Game game = new Game(p1, p2);
+        Player p1 = new ClientPlayer(lobby.getPlayers().get(0), Marble.BLACK);
+        Player p2 = new ClientPlayer(lobby.getPlayers().get(1), Marble.WHITE);
+        ServerGame game = new ServerGame(p1, p2);
         if (lobby.getSize() == 3) {
             p2.setMarble(Marble.BLUE);
-            Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)), Marble.WHITE);
-            if (current.equals("-BOT")) {
-                p3 = new ComputerPlayer("BOT_P3", Marble.WHITE);
-            }
-            game = new Game(p1, p2, p3);
+            Player p3 = new ClientPlayer(lobby.getPlayers().get(2), Marble.WHITE);
+            game = new ServerGame(p1, p2, p3);
         } else if (lobby.getSize() == 4) {
-            Player p3 = new HumanPlayer((current = lobby.getPlayers().get(2)), Marble.BLUE);
-            if (current.equals("-BOT")) {
-                p3 = new ComputerPlayer("BOT_P3", Marble.BLUE);
-            }
-            Player p4 = new HumanPlayer((current = lobby.getPlayers().get(3)), Marble.RED);
-            if (current.equals("-BOT")) {
-                p4 = new ComputerPlayer("BOT_P4", Marble.RED);
-            }
-            game = new Game(p1, p2, p3, p4);
+            Player p3 = new ClientPlayer(lobby.getPlayers().get(2), Marble.BLUE);
+            Player p4 = new ClientPlayer(lobby.getPlayers().get(3), Marble.RED);
+            game = new ServerGame(p1, p2, p3, p4);
         }
         return game;
     }
@@ -311,15 +298,21 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
-            if (getGame(name) == null || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
+            if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name) || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
                     getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
-            getGame(name).getCurrentPlayer().setFields(getGame(name).getBoard(), move);
+            ClientPlayer p = (ClientPlayer) getGame(name).getCurrentPlayer();
+            view.showMessage(getGame(name).getBoard().toString());
+            p.makeMove(getGame(name).getBoard(), move);
+            view.showMessage(getGame(name).getBoard().toString());
         } catch (OffBoardException e) {
             e.printStackTrace();
             // Can't happen because isValidMove is first called
+        }
+        synchronized (((ServerGame) getGame(name)).moveHappened) {
+            ((ServerGame) getGame(name)).moveHappened.notifyAll();
         }
         return ProtocolMessages.MOVE + delimSuccess;
     }

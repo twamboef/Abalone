@@ -12,6 +12,7 @@ import game.Game;
 import game.HumanPlayer;
 import game.Marble;
 import game.Player;
+import game.ServerGame;
 import exceptions.ExitProgram;
 import exceptions.OffBoardException;
 import exceptions.ProtocolException;
@@ -222,41 +223,17 @@ public class Client implements ClientProtocol {
     public void createGame(String line) {
         String[] sline = line.split(";");
         int playerAmount = sline.length - 1;
-        Player p1;
-        Player p2;
-        if (sline[1].equals(name)) {
-            p1 = new HumanPlayer(name, Marble.BLACK);
-        } else {
-            p1 = new ClientPlayer(sline[1], Marble.BLACK);
-        }
-        if (sline[2].equals(name)) {
-            p2 = new HumanPlayer(name, Marble.WHITE);
-        }
-        else {
-            p2 = new ClientPlayer(sline[2], Marble.WHITE);
-        }
-        if (playerAmount == 2) {
-            currentGame = new Game(p1, p2);
-        } else {
-            Player p3;
-            if (sline[3].equals(name)) {
-                p3 = new HumanPlayer(name, Marble.WHITE);
-            } else {
-                p3 = new ClientPlayer(sline[4], Marble.WHITE);
-            }
-            if (playerAmount == 3) {
-                p2.setMarble(Marble.BLUE);
-                currentGame = new Game(p1, p2, p3);
-            } else {
-                Player p4;
-                p3.setMarble(Marble.BLUE);
-                if (sline[4].equals(name)) {
-                    p4 = new HumanPlayer(name, Marble.RED);
-                } else {
-                    p4 = new ClientPlayer(sline[4], Marble.RED);
-                    currentGame = new Game(p1, p2, p3, p4);
-                }
-            }
+        Player p1 = new ClientPlayer(sline[1], Marble.BLACK);
+        Player p2 = new ClientPlayer(sline[2], Marble.WHITE);
+        currentGame = new ServerGame(p1, p2);
+        if (playerAmount == 3) {
+            p2.setMarble(Marble.BLUE);
+            Player p3 = new ClientPlayer(sline[3], Marble.WHITE);
+            currentGame = new ServerGame(p1, p2, p3);
+        } else if (playerAmount == 4) {
+            Player p3 = new ClientPlayer(sline[3], Marble.BLUE);
+            Player p4 = new ClientPlayer(sline[4], Marble.RED);
+            currentGame = new ServerGame(p1, p2, p3, p4);
         }
     }
     

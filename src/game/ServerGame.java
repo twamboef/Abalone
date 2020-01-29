@@ -1,11 +1,7 @@
 package game;
 
 public class ServerGame extends Game {
-    public static int NUMBER_PLAYERS = 2;
-    private Board board;
-    private Player[] players;
-    private int current;
-    private int turnCount;
+    public Object moveHappened = new Object();
 
     public ServerGame(Player p1, Player p2) {
         super(p1, p2);
@@ -21,8 +17,15 @@ public class ServerGame extends Game {
 
     @Override
     public void play() {
-        while (!gameOver()) {
-            players[current].makeMove(board);
+        while (!gameOver() && turnCount < 96) {
+            synchronized(moveHappened) {
+                try {
+                    moveHappened.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            turnCount++;
         }
     }
 }

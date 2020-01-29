@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.OffBoardException;
+
 public class ClientPlayer extends Player {
 
     public ClientPlayer(String name, Marble marble) {
@@ -8,8 +10,10 @@ public class ClientPlayer extends Player {
 
     @Override
     public String determineMove(Board board) {
-        // TODO Auto-generated method stub
         return null;
     }
     
+    public void makeMove(Board board, String move) throws OffBoardException {
+        setFields(board, move);
+    }
 }
