@@ -12,25 +12,6 @@ public class HumanPlayer extends Player {
     }
 
     /**
-     * Makes sure the coordinate is in the format INTEGER, CHARACTER.
-     * 
-     * @param input coordinate
-     * @return correctly formatted coordinate
-     */
-    public String makeGoodFormat(Board board, String input) {
-        String[] marblesplit = input.split(",");
-        while (marblesplit.length != 2 || marblesplit[0].equals("") || marblesplit[1].equals("")) {
-        	input = makeGoodInput(board, input);
-        }
-        try {
-            Integer.parseInt(marblesplit[0]);
-        } catch (NumberFormatException e) {
-            input = marblesplit[1] + "," + marblesplit[0];
-        }
-        return input;
-    }
-
-    /**
      * Makes sure the input consists of an integer and a character with a comma
      * between them (order doesn't matter).
      * 

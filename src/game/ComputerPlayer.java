@@ -102,11 +102,11 @@ public class ComputerPlayer extends Player {
         List<String> myMoves = new ArrayList<String>();
         Random rand = new Random();
         Iterator<Integer> iterator= myMarbles.iterator();
-        Iterator<Integer> iterator2 = myMarbles.iterator();
+        Iterator<Integer> iterator2;
         String marble1 = "";
         String marble2 = "";
-        
         while(iterator.hasNext()) {
+            iterator2 = myMarbles.iterator();
         	int m1 = iterator.next();
         	while(iterator2.hasNext()) {
         		int m2 = iterator2.next();
@@ -122,7 +122,6 @@ public class ComputerPlayer extends Player {
 				}
         		for(int dir = 0; dir < 6; dir++) {
         			String move = makeGoodFormat(board,marble1) + ";" + makeGoodFormat(board, marble2) + ";" + dir;
-        			
         			try {
 						if(board.isValidMove(this, move)) {
 							myMoves.add(move);

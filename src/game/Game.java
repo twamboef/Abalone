@@ -153,7 +153,7 @@ public class Game {
      * @return game finished or not
      */
     public boolean gameOver() {
-        return (getWinner() != null || turnCount >= 96);
+        return (getWinner() != null || turnCount >= 1000000);
     }
 
     /**

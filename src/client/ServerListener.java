@@ -165,7 +165,7 @@ public class ServerListener implements Runnable {
             TUI.showMessage(sb.toString());
             break;
         case ProtocolMessages.START:
-            //TODO fix Game
+            TUI.showMessage(client.getGame().getBoard().toString());
             client.createGame(input);
             client.getGame().start();
             break;
@@ -179,6 +179,7 @@ public class ServerListener implements Runnable {
                     TUI.showMessage("Move rejected by server");
                 }
             } catch (NumberFormatException e) {
+                TUI.showMessage(client.getGame().getBoard().toString());
                 String move = sinput[2] + ProtocolMessages.DELIMITER
                         + sinput[3] + ProtocolMessages.DELIMITER + sinput[4];
                 TUI.showMessage(parm1 + " made move" + move);

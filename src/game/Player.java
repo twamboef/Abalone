@@ -110,6 +110,27 @@ public abstract class Player {
                 || marbleTo(board, lasthor, lastdiai, dir) == board.getIndex(firsthor, firstdiai)
                 || marbleTo(board, marbleTo(board, lasthor, lastdiai, dir), dir) == board.getIndex(firsthor, firstdiai);
     }
+    
+    /**
+     * Makes sure the coordinate is in the format INTEGER, CHARACTER.
+     * 
+     * @param input coordinate
+     * @return correctly formatted coordinate
+     */
+    public String makeGoodFormat(Board board, String input) {
+        String[] marblesplit = input.split(",");
+        if (this instanceof HumanPlayer) {
+            while (marblesplit.length != 2 || marblesplit[0].equals("") || marblesplit[1].equals("")) {
+                input = ((HumanPlayer) this).makeGoodInput(board, input);
+            }
+        }
+        try {
+            Integer.parseInt(marblesplit[0]);
+        } catch (NumberFormatException e) {
+            input = marblesplit[1] + "," + marblesplit[0];
+        }
+        return input;
+    }
 
     /**
      * Fixes the move so that the leading marble will be first in the move string.

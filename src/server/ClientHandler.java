@@ -8,6 +8,9 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+
+import game.Board;
+import game.Player;
 import protocol.ProtocolMessages;
 
 public class ClientHandler implements Runnable {
@@ -141,10 +144,11 @@ public class ClientHandler implements Runnable {
                 }
                 break;
             case ProtocolMessages.MOVE:
-                String move;
-                writeLine(result = server.makeMove(name,
-                        (move = parm1 + ProtocolMessages.DELIMITER 
-                        + parm2 + ProtocolMessages.DELIMITER + parm3)));
+                Player playr = server.getGame(name).getCurrentPlayer();
+                Board brd = server.getGame(name).getBoard();
+                String move = playr.makeGoodFormat(brd, parm1) + ProtocolMessages.DELIMITER + playr.makeGoodFormat(brd, parm2)
+                + ProtocolMessages.DELIMITER + parm3;
+                writeLine(result = server.makeMove(name, move));
                 String line = server.sendMove(name, move);
                 writeLine(line);
                 if (result.contains("200")) {
