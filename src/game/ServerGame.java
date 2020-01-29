@@ -1,5 +1,7 @@
 package game;
 
+import exceptions.OffBoardException;
+
 public class ServerGame extends Game {
     public Object moveHappened = new Object();
 
@@ -15,6 +17,17 @@ public class ServerGame extends Game {
         super(p1, p2, p3, p4);
     }
 
+    @Override
+    public void start() {
+        try {
+            board.reset();
+        } catch (OffBoardException e) {
+            e.printStackTrace();
+        }
+        this.play();
+        printResult();
+    }
+    
     @Override
     public void play() {
         while (!gameOver() && turnCount < 96) {

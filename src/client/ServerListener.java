@@ -165,9 +165,13 @@ public class ServerListener implements Runnable {
             TUI.showMessage(sb.toString());
             break;
         case ProtocolMessages.START:
-            TUI.showMessage(client.getGame().getBoard().toString());
             client.createGame(input);
-            client.getGame().start();
+            ((ServerGame) client.getGame()).start();
+            TUI.showMessage("HOI");
+            TUI.showMessage(client.getGame().getBoard().toString());
+            if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
+                TUI.showMessage("It's your turn first (BLACK)");
+            }
             break;
         case ProtocolMessages.MOVE:
             try {

@@ -30,7 +30,7 @@ public class ClientTUI implements ClientView {
             showMessage("For help, type HELP");
             try {
                 String line;
-                handleUserInput((line = systemIn.readLine()));
+                handleUserInput((line = systemIn.readLine().toUpperCase()));
                     if (!line.equals("HELP") && !invalidCommand) {
                     synchronized(Ack) {
                         Ack.wait();
