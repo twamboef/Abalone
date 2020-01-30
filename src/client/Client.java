@@ -81,9 +81,10 @@ public class Client implements ClientProtocol {
 
     /**
      * Creates a connection to the server. Requests the IP and port to connect to at
-     * the view (TUI).
-     * The method continues to ask for an IP and port and attempts to connect until
-     * a connection is established or until the user indicates to exit the program.
+     * the view (TUI). The method continues to ask for an IP and port and attempts
+     * to connect until a connection is established or until the user indicates to
+     * exit the program.
+     * 
      * @throws ExitProgram if a connection is not established and the user indicates
      *                     to want to exit the program.
      * @throws IOException if clearConnection() throws this
@@ -116,9 +117,8 @@ public class Client implements ClientProtocol {
     }
 
     /**
-     * Resets the serverSocket and In- and OutputStreams to null.
-     * Always make sure to close current connections via shutdown() before calling
-     * this method!
+     * Resets the serverSocket and In- and OutputStreams to null. Always make sure
+     * to close current connections via shutdown() before calling this method!
      */
     public void clearConnection() {
         serverSocket = null;
@@ -127,6 +127,7 @@ public class Client implements ClientProtocol {
 
     /**
      * Sends a message to the server.
+     * 
      * @param msg message to send
      * @throws ServerUnavailableException if server is unavailable
      */
@@ -147,6 +148,7 @@ public class Client implements ClientProtocol {
 
     /**
      * When a move is received, this is sent to the game so that it is synced.
+     * 
      * @param line with move, e.g. MOVE;1,A;1,A;3;
      */
     public void processMove(String line) {
@@ -249,6 +251,7 @@ public class Client implements ClientProtocol {
 
     /**
      * Creates a new game.
+     * 
      * @param line with players for this game
      */
     public void createGame(String line) {

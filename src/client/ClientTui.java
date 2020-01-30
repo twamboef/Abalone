@@ -1,28 +1,30 @@
 package client;
 
+import exceptions.ExitProgram;
+import exceptions.ProtocolException;
+import exceptions.ServerUnavailableException;
+import game.Direction;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import exceptions.ExitProgram;
-import exceptions.ProtocolException;
-import exceptions.ServerUnavailableException;
-import game.Direction;
 import protocol.ProtocolMessages;
 
 public class ClientTui implements ClientView {
-    public Object Ack = new Object();
+    public Object ack = new Object();
     protected Client client;
     private BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
 
     private boolean invalidCommand;
-    
+
     public ClientTui(Client cl) throws IOException {
         this.client = cl;
     }
 
+    /**
+     * Initiates this TUI.
+     */
     public void start() throws ProtocolException, ExitProgram, InterruptedException {
         while (true) {
             invalidCommand = false;
@@ -31,9 +33,9 @@ public class ClientTui implements ClientView {
             try {
                 String line;
                 handleUserInput((line = systemIn.readLine().toUpperCase()));
-                    if (!line.equals("HELP") && !invalidCommand) {
-                    synchronized(Ack) {
-                        Ack.wait();
+                if (!line.equals("HELP") && !invalidCommand) {
+                    synchronized (ack) {
+                        ack.wait();
                     }
                 }
             } catch (ServerUnavailableException | IOException e) {
@@ -41,68 +43,70 @@ public class ClientTui implements ClientView {
             }
         }
     }
-    
+
+    @Override
     public void handleUserInput(String command) throws ServerUnavailableException, ProtocolException {
         if (command.contains(ProtocolMessages.CONNECT)) {
             client.connect(command.split(";")[1]);
             return;
         }
         switch (command) {
-        case "HELP":
-            showMessage(printHelpMenu());
-            break;
-        case ProtocolMessages.CREATE:
-            String lobbyname = getString("What name should the lobby get?");
-            int size = getInt("How many players? (2-4)");
-            while (size < 2 || size > 4) {
-                size = getInt("Please enter an integer between 2 and 4");
-            }
-            client.createLobby(lobbyname, size);
-            break;
-        case ProtocolMessages.LISTL:
-            client.getLobbyList();
-            break;
-        case ProtocolMessages.JOIN:
-            client.joinLobby(getString("Which lobby would you like to join?"));
-            break;
-        case ProtocolMessages.LEAVE:
-            client.leaveLobby();
-            break;
-        case ProtocolMessages.READY:
-            client.doReady();
-            break;
-        case ProtocolMessages.UNREADY:
-            client.doUnready();
-            break;
-        case ProtocolMessages.MOVE:
-            doMove();
-            break;
-        case ProtocolMessages.FORFEIT:
-            client.playerForfeit();
-            break;
-        case ProtocolMessages.LISTP:
-            client.getServerList();
-            break;
-        case ProtocolMessages.CHALL:
-            client.challengePlayer(getString("Who do you want to challenge?"));
-            break;
-        case ProtocolMessages.CHALLACC:
-            client.challengeAccept(getString("Whose challenge do you want to accept?"));
-            break;
-        case ProtocolMessages.PM:
-            String name;
-            client.sendPM((name = getString("Who would you like to PM?")), getString("What do you want to send to " + name + "?"));
-            break;
-        case ProtocolMessages.LMSG:
-            client.sendLM(getString("What do you want to send to your lobby?"));
-            break;
-        case ProtocolMessages.LEADERBOARD:
-            client.getLeaderboard();
-            break;
-        default:
-            showMessage("Invalid command");
-            invalidCommand = true;
-            break;
+            case "HELP":
+                showMessage(printHelpMenu());
+                break;
+            case ProtocolMessages.CREATE:
+                String lobbyname = getString("What name should the lobby get?");
+                int size = getInt("How many players? (2-4)");
+                while (size < 2 || size > 4) {
+                    size = getInt("Please enter an integer between 2 and 4");
+                }
+                client.createLobby(lobbyname, size);
+                break;
+            case ProtocolMessages.LISTL:
+                client.getLobbyList();
+                break;
+            case ProtocolMessages.JOIN:
+                client.joinLobby(getString("Which lobby would you like to join?"));
+                break;
+            case ProtocolMessages.LEAVE:
+                client.leaveLobby();
+                break;
+            case ProtocolMessages.READY:
+                client.doReady();
+                break;
+            case ProtocolMessages.UNREADY:
+                client.doUnready();
+                break;
+            case ProtocolMessages.MOVE:
+                doMove();
+                break;
+            case ProtocolMessages.FORFEIT:
+                client.playerForfeit();
+                break;
+            case ProtocolMessages.LISTP:
+                client.getServerList();
+                break;
+            case ProtocolMessages.CHALL:
+                client.challengePlayer(getString("Who do you want to challenge?"));
+                break;
+            case ProtocolMessages.CHALLACC:
+                client.challengeAccept(getString("Whose challenge do you want to accept?"));
+                break;
+            case ProtocolMessages.PM:
+                String name;
+                client.sendPM((name = getString("Who would you like to PM?")),
+                        getString("What do you want to send to " + name + "?"));
+                break;
+            case ProtocolMessages.LMSG:
+                client.sendLM(getString("What do you want to send to your lobby?"));
+                break;
+            case ProtocolMessages.LEADERBOARD:
+                client.getLeaderboard();
+                break;
+            default:
+                showMessage("Invalid command");
+                invalidCommand = true;
+                break;
         }
     }
 
@@ -110,6 +114,9 @@ public class ClientTui implements ClientView {
         System.out.println(msg);
     }
 
+    /**
+     * Asks the user for an IP address.
+     */
     public InetAddress getIP() {
         try {
             return InetAddress.getByName(getString("Please enter an IP"));
@@ -119,6 +126,9 @@ public class ClientTui implements ClientView {
         }
     }
 
+    /**
+     * Asks the user for a string.
+     */
     public String getString(String question) {
         showMessage(question);
         String line = "";
@@ -131,6 +141,9 @@ public class ClientTui implements ClientView {
         return line;
     }
 
+    /**
+     * Asks the user for an integer.
+     */
     public int getInt(String question) {
         int i = -1;
         try {
@@ -154,7 +167,11 @@ public class ClientTui implements ClientView {
             return getBoolean(question);
         }
     }
-    
+
+    /**
+     * Asks the user what move they want to make.
+     * @throws ServerUnavailableException if server is unavailable
+     */
     public void doMove() throws ServerUnavailableException {
         StringBuilder sb = new StringBuilder();
         sb.append("In which direction?\n");
@@ -167,6 +184,10 @@ public class ClientTui implements ClientView {
                 + getInt(sb.toString()));
     }
 
+    /**
+     * Returns a help menu with all commands.
+     * @return string for help menu
+     */
     public String printHelpMenu() {
         StringBuilder sb = new StringBuilder();
         sb.append("\nCommands:\n");

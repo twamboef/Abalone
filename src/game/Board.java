@@ -469,8 +469,7 @@ public class Board {
                 }
             }
             player.setFields(copy, move);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException | OffBoardException e) {
             return false;
         } finally {
             player.setPoints(tempscore);
