@@ -3,9 +3,7 @@ package server;
 import exceptions.ExitProgram;
 import exceptions.OffBoardException;
 import game.ClientPlayer;
-import game.ComputerPlayer;
 import game.Game;
-import game.HumanPlayer;
 import game.Marble;
 import game.Player;
 import game.ServerGame;
@@ -23,7 +21,7 @@ public class Server implements Runnable, ServerProtocol {
     private ServerSocket ssock;
     private List<ClientHandler> clients;
     private List<Lobby> lobbies;
-    private List<Game> games;
+    private List<ServerGame> games;
     private ServerTUI view;
     private int next_client_no;
 
@@ -208,8 +206,8 @@ public class Server implements Runnable, ServerProtocol {
     public String leaveLobby(String name) {
         Lobby lobby = getLobby(name);
         if (lobby != null) {
-            getClientHandler(name).leaveLobby();
             lobby.leave(name);
+            getClientHandler(name).leaveLobby();
             if (lobby.getPlayers().size() == 0) {
                 lobbies.remove(lobby);
             }
@@ -249,7 +247,6 @@ public class Server implements Runnable, ServerProtocol {
                 + ProtocolMessages.DELIMITER;
     }
 
-    //TODO write this to clients when sb joins or leaves a lobby
     @Override
     public String lobbyChanged(Lobby lobby) {
         String result = ProtocolMessages.CHANGE + ProtocolMessages.DELIMITER;
@@ -261,7 +258,9 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String startGame(Lobby lobby) {
-        games.add(createGame(lobby));
+        ServerGame game = createGame(lobby);
+        new Thread(game).start();
+        games.add(game);
         for (String p : lobby.getPlayers()) {
             getClientHandler(p).unready();
         }
@@ -279,7 +278,7 @@ public class Server implements Runnable, ServerProtocol {
      * @requires lobby.getSize() == lobby.getPlayers().length
      * @return newly made game
      */
-    private Game createGame(Lobby lobby) {
+    private ServerGame createGame(Lobby lobby) {
         Player p1 = new ClientPlayer(lobby.getPlayers().get(0), Marble.BLACK);
         Player p2 = new ClientPlayer(lobby.getPlayers().get(1), Marble.WHITE);
         ServerGame game = new ServerGame(p1, p2);
@@ -298,21 +297,21 @@ public class Server implements Runnable, ServerProtocol {
     @Override
     public String makeMove(String name, String move) {
         try {
+            view.showMessage(getGame(name).getCurrentPlayer().getName());
             if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name) || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
                     getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
             ClientPlayer p = (ClientPlayer) getGame(name).getCurrentPlayer();
-            view.showMessage(getGame(name).getBoard().toString());
             p.makeMove(getGame(name).getBoard(), move);
             view.showMessage(getGame(name).getBoard().toString());
+            synchronized (getGame(name).moveHappened) {
+                getGame(name).moveHappened.notifyAll();
+            }
         } catch (OffBoardException e) {
             e.printStackTrace();
             // Can't happen because isValidMove is first called
-        }
-        synchronized (((ServerGame) getGame(name)).moveHappened) {
-            ((ServerGame) getGame(name)).moveHappened.notifyAll();
         }
         return ProtocolMessages.MOVE + delimSuccess;
     }
@@ -384,7 +383,8 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String challengePlayer(String challenger, String target) {
-        if (getClientHandler(target) == null || getGame(target) != null) {
+        if (challenger.equals(target) || getClientHandler(target) == null || getLobby(challenger) != null 
+                || getLobby(target) != null || getGame(challenger) != null || getGame(target) != null) {
             return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
                     + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
         }
@@ -399,16 +399,19 @@ public class Server implements Runnable, ServerProtocol {
     
     @Override
     public String challengeAccept(String accepter, String challenger) {
-        if (!getClientHandler(accepter).challengedBy.equals(challenger)) {
+        if (getClientHandler(challenger) == null) {
+            getClientHandler(accepter).challengedBy = "";
+        }
+        if (!getClientHandler(accepter).challengedBy.equals(challenger)
+                || getLobby(challenger) != null || getLobby(accepter) != null
+                || getGame(challenger) != null || getGame(accepter) != null) {   
             return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER
                     + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
         }
         Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(),2);
         lobbies.add(lobby);
-        lobby.join(accepter);
-        lobby.join(challenger);
-        getClientHandler(accepter).joinLobby();
-        getClientHandler(challenger).joinLobby();
+        joinLobby(challenger, lobby.getName());
+        joinLobby(accepter, lobby.getName());
         return ProtocolMessages.CHALLACC + delimSuccess;
     }
 
@@ -477,11 +480,11 @@ public class Server implements Runnable, ServerProtocol {
      * @param name of a player
      * @return game or null
      */
-    public Game getGame(String name) {
+    public ServerGame getGame(String name) {
         for (Game game : games) {
             for (Player player : game.getPlayers()) {
                 if (player.getName().equals(name)) {
-                    return game;
+                    return (ServerGame) game;
                 }
             }
         }

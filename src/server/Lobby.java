@@ -31,6 +31,9 @@ public class Lobby {
      */
     public void join(String player) {
         players.add(player);
+        if (players.size() == size) {
+            joinable = false;
+        }
     }
 
     /**
@@ -43,6 +46,9 @@ public class Lobby {
             if (players.get(i) == player) {
                 players.remove(i);
             }
+        }
+        if (players.size() < size) {
+            joinable = true;
         }
     }
 

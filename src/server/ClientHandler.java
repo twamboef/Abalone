@@ -92,6 +92,7 @@ public class ClientHandler implements Runnable {
                 break;
             case ProtocolMessages.CREATE:
                 writeLine(server.createLobby(parm1, name, parm2));
+                writeLine(server.lobbyChanged(server.getLobby(name)));
                 break;
             case ProtocolMessages.LISTL:
                 writeLine(server.getLobbyList());
@@ -101,24 +102,26 @@ public class ClientHandler implements Runnable {
                 if (result.contains("200")) {
                     joinLobby();
                     Lobby lobby = server.getLobby(name);
-                    ClientHandler ch;
                     for (String player : lobby.getPlayers()) {
-                        if ((ch = server.getClientHandler(player)) != this) {
-                            ch.writeLine(server.lobbyChanged(lobby));
-                        }
+                            server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
                     }
                 }
                 break;
             case ProtocolMessages.LEAVE:
-                writeLine(result = server.leaveLobby(name));
+                Lobby lobby = server.getLobby(name);
+                result = server.leaveLobby(name);
+                writeLine(result);
                 if (result.contains("200")) {
                     leaveLobby();
+                    for (String player : lobby.getPlayers()) {
+                            server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
+                    }
                 }
                 break;
             case ProtocolMessages.READY:
                 writeLine(result = server.doReady(name));
                 if (result.contains("200")) {
-                    Lobby lobby = server.getLobby(name);
+                    lobby = server.getLobby(name);
                     for (String p : lobby.getPlayers()) {
                         server.getClientHandler(p).writeLine(server.readyChange(lobby));
                     }
@@ -137,7 +140,7 @@ public class ClientHandler implements Runnable {
             case ProtocolMessages.UNREADY:
                 writeLine(result = server.doUnready(name));
                 if (result.contains("200")) {
-                    Lobby lobby = server.getLobby(name);
+                    lobby = server.getLobby(name);
                     for (String p : lobby.getPlayers()) {
                         server.getClientHandler(p).writeLine(server.readyChange(lobby));
                     }
@@ -150,14 +153,38 @@ public class ClientHandler implements Runnable {
                 + ProtocolMessages.DELIMITER + parm3;
                 writeLine(result = server.makeMove(name, move));
                 String line = server.sendMove(name, move);
-                writeLine(line);
                 if (result.contains("200")) {
+                    writeLine(line);
                     writeToGameClients(line);
+                }
+                if (server.getGame(name).gameOver()) {
+                    result = server.gameFinish(server.getGame(name));
+                    writeLine(result);
+                    writeToGameClients(result);
                 }
                 break;
             case ProtocolMessages.FORFEIT:
-                writeLine(server.playerForfeit(name));
-                server.getGame(name).playerForfeit(name);
+                List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+                for (String p : server.getLobby(name).getPlayers()) {
+                    if (!p.equals(name)) {
+                        clientHandlers.add(server.getClientHandler(p));
+                    }
+                }
+                result = server.playerForfeit(name);
+                writeLine(result);
+                if (result.contains("200")) {
+                    server.getGame(clientHandlers.get(0).getName()).playerForfeit(name);
+                    for (ClientHandler ch : clientHandlers) {
+                        ch.writeLine(server.playerDefeat(name));
+                    }
+                    if (server.getGame(clientHandlers.get(0).getName()).gameOver()) {
+                        result = server.gameFinish(server.getGame(clientHandlers.get(0).getName()));
+                        writeLine(result);
+                        for (ClientHandler ch : clientHandlers) {
+                            ch.writeLine(result);
+                        }
+                    }
+                }
                 break;
             case ProtocolMessages.LISTP:
                 writeLine(server.getServerList());
@@ -172,6 +199,10 @@ public class ClientHandler implements Runnable {
                 writeLine(result = server.challengeAccept(name, parm1));
                 if (result.contains("200")) {
                     server.getClientHandler(parm1).writeLine(server.sendChallengeAccept(name));
+                    lobby = server.getLobby(name);
+                    for (String player : lobby.getPlayers()) {
+                        server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
+                    }
                 }
                 break;
             case ProtocolMessages.PM:

@@ -9,7 +9,6 @@ import java.net.Socket;
 
 import game.ClientPlayer;
 import game.Game;
-import game.HumanPlayer;
 import game.Marble;
 import game.Player;
 import game.ServerGame;
@@ -182,6 +181,15 @@ public class Client implements ClientProtocol {
 
     @Override
     public void makeMove(String move) throws ServerUnavailableException {
+        String[] smove = move.split(";");
+        try {
+            move = currentGame.getCurrentPlayer().makeLeadingFirst(currentGame.getBoard(), 
+                    currentGame.getCurrentPlayer().makeGoodFormat(currentGame.getBoard(), smove[0].toUpperCase())
+                    + ProtocolMessages.DELIMITER + currentGame.getCurrentPlayer().makeGoodFormat(
+                            currentGame.getBoard(), smove[1].toUpperCase()) + ProtocolMessages.DELIMITER + smove[2]);
+        } catch (OffBoardException e) {
+            e.printStackTrace();
+        }
         sendMessage(ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + move + ProtocolMessages.DELIMITER);
     }
 

@@ -2,7 +2,7 @@ package game;
 
 import exceptions.OffBoardException;
 
-public class ServerGame extends Game {
+public class ServerGame extends Game implements Runnable {
     public Object moveHappened = new Object();
 
     public ServerGame(Player p1, Player p2) {
@@ -18,7 +18,7 @@ public class ServerGame extends Game {
     }
 
     @Override
-    public void start() {
+    public void run() {
         try {
             board.reset();
         } catch (OffBoardException e) {
@@ -38,7 +38,8 @@ public class ServerGame extends Game {
                     e.printStackTrace();
                 }
             }
+            current = current.next(playerAmount);
             turnCount++;
         }
-    }
+    } 
 }

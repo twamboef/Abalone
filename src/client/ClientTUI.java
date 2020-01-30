@@ -52,7 +52,7 @@ public class ClientTUI implements ClientView {
             showMessage(printHelpMenu());
             break;
         case ProtocolMessages.CREATE:
-            String lobbyname = getString("What name do should the lobby get?");
+            String lobbyname = getString("What name should the lobby get?");
             int size = getInt("How many players? (2-4)");
             while (size < 2 || size > 4) {
                 size = getInt("Please enter an integer between 2 and 4");

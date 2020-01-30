@@ -7,6 +7,8 @@ import java.net.Socket;
 
 import exceptions.OffBoardException;
 import exceptions.ServerUnavailableException;
+import game.ClientPlayer;
+import game.Player;
 import game.ServerGame;
 import protocol.ProtocolMessages;
 
@@ -86,7 +88,6 @@ public class ServerListener implements Runnable {
         case ProtocolMessages.CREATE:
             if (parm1.equals("200")) {
                 TUI.showMessage("Successfully created lobby!");
-                TUI.showMessage("Players in lobby:\n" + client.getName());
             } else {
                 TUI.showMessage("Failed to create lobby");
             }
@@ -114,13 +115,7 @@ public class ServerListener implements Runnable {
             break;
         case ProtocolMessages.JOIN:
             if (parm1.equals("200")) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("Successfully joined lobby!\n\n");
-                sb.append("Players in lobby:\n");
-                for (int i = 2; i < sinput.length; i++) {
-                    sb.append(sinput[i] + "\n");
-                }
-                TUI.showMessage(sb.toString());
+                TUI.showMessage("Successfully joined lobby!\n");
             } else {
                 TUI.showMessage("Failed to join lobby");
             }
@@ -166,11 +161,14 @@ public class ServerListener implements Runnable {
             break;
         case ProtocolMessages.START:
             client.createGame(input);
-            ((ServerGame) client.getGame()).start();
-            TUI.showMessage("HOI");
-            TUI.showMessage(client.getGame().getBoard().toString());
+            new Thread(((ServerGame) client.getGame())).start();
+            TUI.showMessage("Game started!");
             if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
-                TUI.showMessage("It's your turn first (BLACK)");
+                TUI.showMessage(client.getGame().getBoard().toString());
+                TUI.showMessage("\nIt's your turn first. Your color is " + client.getGame().getCurrentPlayer().getMarble());
+                TUI.showMessage("To make a move, type MOVE");
+            } else {
+                TUI.showMessage("Waiting until it's your turn...");
             }
             break;
         case ProtocolMessages.MOVE:
@@ -183,13 +181,34 @@ public class ServerListener implements Runnable {
                     TUI.showMessage("Move rejected by server");
                 }
             } catch (NumberFormatException e) {
-                TUI.showMessage(client.getGame().getBoard().toString());
-                String move = sinput[2] + ProtocolMessages.DELIMITER
-                        + sinput[3] + ProtocolMessages.DELIMITER + sinput[4];
-                TUI.showMessage(parm1 + " made move" + move);
-                    synchronized (((ServerGame) client.getGame()).moveHappened) {
-                        ((ServerGame) client.getGame()).moveHappened.notifyAll();
+                try {
+                    ((ClientPlayer) client.getGame().getCurrentPlayer()).makeMove(client.getGame().getBoard(), 
+                            sinput[2] + ProtocolMessages.DELIMITER + sinput[3] 
+                                    + ProtocolMessages.DELIMITER + sinput[4]);
+                } catch (OffBoardException e1) {
+                    e1.printStackTrace();
+                }
+                synchronized (((ServerGame) client.getGame()).moveHappened) {
+                    ((ServerGame) client.getGame()).moveHappened.notifyAll();
+                }
+                Player[] players = client.getGame().getPlayers();
+                if (players.length != 4) {
+                    for (Player p : players) {
+                        TUI.showMessage(p.getName() + "'s points: " + p.getPoints());
                     }
+                } else {
+                    TUI.showMessage("Team " + players[0].getName() + " & " + players[1].getName() 
+                            + "'s points: " + (players[0].getPoints() + players[1].getPoints()));
+                    TUI.showMessage("Team " + players[2].getName() + " & " + players[3].getName() 
+                            + "'s points: " + (players[2].getPoints() + players[3].getPoints()));
+                }
+                TUI.showMessage(client.getGame().getBoard().toString());
+                if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
+                    TUI.showMessage("It's your turn! Your color is " + client.getGame().getCurrentPlayer().getMarble());
+                    TUI.showMessage("To make a move, type MOVE");
+                } else {
+                    TUI.showMessage("Waiting until it's your turn...");
+                }
             }
             break;
         case ProtocolMessages.FINISH:
@@ -201,14 +220,21 @@ public class ServerListener implements Runnable {
                 TUI.showMessage("Game finished! Winners: " + parm1 
                         + " and " + client.getGame().getTeamMate(parm1).getName());
             }
+            TUI.showMessage("\n\nPlease enter a command.");
+            TUI.showMessage("For help, type HELP");
             client.clearGame();
             break;
         case ProtocolMessages.DEFEAT:
             TUI.showMessage(parm1 + " has been defeated!");
             break;
         case ProtocolMessages.FORFEIT:
-            TUI.showMessage("Player " + parm1 + " has forfeited");
-            client.getGame().playerForfeit(parm1);
+            if (parm1.equals("200")) {
+                TUI.showMessage("Forfeit successful");
+            }
+            parmi = Integer.parseInt(parm1);
+            if (parmi > 200) {
+                TUI.showMessage("Forfeit failed");
+            }
             break;
         case ProtocolMessages.LISTP:
             if (parm1.equals("200")) {
