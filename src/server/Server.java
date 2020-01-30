@@ -409,9 +409,11 @@ public class Server implements Runnable, ServerProtocol {
                     + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
         }
         Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(),2);
+        lobby.join(challenger);
+        lobby.join(accepter);
         lobbies.add(lobby);
-        joinLobby(challenger, lobby.getName());
-        joinLobby(accepter, lobby.getName());
+        getClientHandler(challenger).joinLobby();
+        getClientHandler(accepter).joinLobby();
         return ProtocolMessages.CHALLACC + delimSuccess;
     }
 

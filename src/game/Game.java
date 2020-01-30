@@ -153,7 +153,7 @@ public class Game {
      * @return game finished or not
      */
     public boolean gameOver() {
-        return (getWinner() != null || turnCount >= 1000000);
+        return (getWinner() != null || turnCount >= 1000);
     }
 
     /**
@@ -245,7 +245,7 @@ public class Game {
                 for (Player ps : players) {
                     if (ps.getMarble() == p.getMarble().next(4).next(4)) {
                         if (p.getPoints() + ps.getPoints() >= 6) {
-                            System.out.println("Team " + p.getName() + " and " + ps.getName() + " won!");
+                            System.out.println("Team " + p.getName() + " & " + ps.getName() + " won!");
                             return;
                         }
                     }

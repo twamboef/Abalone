@@ -374,12 +374,19 @@ public class Board {
         try {
             int ball2 = -1;
             Marble teamMate = marble.next(4).next(4);
-            for (int i = 0; i < 6 && !hasThree; i++) { // test if moving three balls
-                if (player.marbleTo(copy, (ball2 = player.marbleTo(copy, lasthor, lastdiai, Direction.values()[i])),
-                        Direction.values()[i]) == getIndex(firsthor, firstdiai)) {
-                    hasThree = true;
+            for (int i = 0; i < 6 && !nextTo; i++) { // test if moving three balls
+                if ((ball2 = player.marbleTo(copy, lasthor, lastdiai, Direction.values()[i])) == getIndex(firsthor, firstdiai)) {
+                    nextTo = true;
                 }
-             }
+            }
+            if (!nextTo) {
+                for (int i = 0; i < 6 && !hasThree; i++) { // test if moving three balls
+                    if (player.marbleTo(copy, (ball2 = player.marbleTo(copy, lasthor, lastdiai, Direction.values()[i])),
+                            Direction.values()[i]) == getIndex(firsthor, firstdiai)) {
+                        hasThree = true;
+                    }
+                }
+            }
             if (ball2 == copy.getIndex(firsthor, firstdiai)) {
                 nextTo = true;
             }
