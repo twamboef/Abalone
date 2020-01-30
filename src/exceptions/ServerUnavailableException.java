@@ -2,10 +2,10 @@ package exceptions;
 
 public class ServerUnavailableException extends Exception {
 
-	private static final long serialVersionUID = 3194494346431589825L;
+    private static final long serialVersionUID = 3194494346431589825L;
 
-	public ServerUnavailableException(String msg) {
-		super(msg);
-	}
+    public ServerUnavailableException(String msg) {
+        super(msg);
+    }
 
 }

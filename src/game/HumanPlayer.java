@@ -30,32 +30,32 @@ public class HumanPlayer extends Player {
         }
         result = makeGoodFormat(board, result).toUpperCase();
         boolean hasHorizontal = false;
-       	while (true) {
-       		marblesplit = result.split(",");
-    		for (int i = 0; i < board.horizontal.length; i++) {
-    			if (marblesplit[1].charAt(0) == board.horizontal[i]) {
-    				hasHorizontal = true;
-    			}
-    		}
-    		if (!hasHorizontal) {
-    			 System.out.println(">Invalid input, please try again.\n  "
-                         + "Format: CHARACTER,INTEGER or INTEGER,CHARACTER\n  e.g. A,1 or 1,A");
-                 result = makeGoodInput(board, scanner.nextLine());
-    		}
-    		else {
-    			break;
-    		}
-       	}
+        while (true) {
+            marblesplit = result.split(",");
+            for (int i = 0; i < board.horizontal.length; i++) {
+                if (marblesplit[1].charAt(0) == board.horizontal[i]) {
+                    hasHorizontal = true;
+                }
+            }
+            if (!hasHorizontal) {
+                System.out.println(">Invalid input, please try again.\n  "
+                        + "Format: CHARACTER,INTEGER or INTEGER,CHARACTER\n  e.g. A,1 or 1,A");
+                result = makeGoodInput(board, scanner.nextLine());
+            } else {
+                break;
+            }
+        }
         while (true) {
             try {
-            	Marble marble;
-                while ((marble = board.getMarble(marblesplit[1].charAt(0), Integer.parseInt(marblesplit[0]))) != getMarble()) {
+                Marble marble;
+                while ((marble = board.getMarble(marblesplit[1].charAt(0),
+                        Integer.parseInt(marblesplit[0]))) != getMarble()) {
                     if (board.getPlayers() == 4) {
-                    	if (marble == getMarble().next(4).next(4)) {
-                    		break;
-                    	}
+                        if (marble == getMarble().next(4).next(4)) {
+                            break;
+                        }
                     }
-                	System.out.println("> This is not one of your marbles, please try again");
+                    System.out.println("> This is not one of your marbles, please try again");
                     result = makeGoodInput(board, scanner.nextLine().toUpperCase());
                     marblesplit = result.split(",");
                 }

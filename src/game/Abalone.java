@@ -24,7 +24,7 @@ public class Abalone {
         System.out.println("Player 1, what is your name?");
         final String player1 = scanner.nextLine();
         System.out.println("Player 2, what is your name?");
-        String player2 = scanner.nextLine();
+        final String player2 = scanner.nextLine();
         String player3 = "";
         if (players > 2) {
             System.out.println("Player 3, what is your name?");
@@ -41,39 +41,34 @@ public class Abalone {
         Player p4;
         Game game;
         if (player1.equals("-BOT")) {
-        	p1 = new ComputerPlayer(player1, Marble.BLACK);
-        }
-        else {
+            p1 = new ComputerPlayer(player1, Marble.BLACK);
+        } else {
             p1 = new HumanPlayer(player1, Marble.BLACK);
         }
         if (player2.equals("-BOT")) {
-        	p2 = new ComputerPlayer(player2, Marble.WHITE);
-        }
-        else {
+            p2 = new ComputerPlayer(player2, Marble.WHITE);
+        } else {
             p2 = new HumanPlayer(player2, Marble.WHITE);
 
         }
         game = new Game(p1, p2);
         if (players == 3) {
-        	p2.setMarble(Marble.BLUE);
-        	if (player3.equals("-BOT")) {
-        		p3 = new ComputerPlayer(player3, Marble.WHITE);
-        	}
-        	else {
-        		 p3 = new HumanPlayer(player3, Marble.WHITE);
-        	}
+            p2.setMarble(Marble.BLUE);
+            if (player3.equals("-BOT")) {
+                p3 = new ComputerPlayer(player3, Marble.WHITE);
+            } else {
+                p3 = new HumanPlayer(player3, Marble.WHITE);
+            }
             game = new Game(p1, p2, p3);
         } else if (players == 4) {
             if (player3.equals("-BOT")) {
-            	p3 = new ComputerPlayer(player3, Marble.BLUE);
-            }
-            else {
+                p3 = new ComputerPlayer(player3, Marble.BLUE);
+            } else {
                 p3 = new HumanPlayer(player3, Marble.BLUE);
             }
             if (player4.equals("-BOT")) {
-            	p4 = new ComputerPlayer(player4, Marble.RED);
-            }
-            else {
+                p4 = new ComputerPlayer(player4, Marble.RED);
+            } else {
                 p4 = new HumanPlayer(player4, Marble.RED);
             }
             game = new Game(p1, p2, p3, p4);

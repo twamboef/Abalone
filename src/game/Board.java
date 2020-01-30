@@ -1,9 +1,8 @@
 package game;
 
+import exceptions.OffBoardException;
 import java.util.ArrayList;
 import java.util.List;
-
-import exceptions.OffBoardException;
 
 public class Board {
     public static final int size = 61;
@@ -12,10 +11,8 @@ public class Board {
     public static final String ENTER = "\n";
     public static final String LBORDER = "/";
     public static final String RBORDER = "\\";
-    public static final String UBORDER = 
-            "_________________";
-    public static final String BBORDER = 
-            " 1   2   3   4   5";
+    public static final String UBORDER = "_________________";
+    public static final String BBORDER = " 1   2   3   4   5";
     char[] horizontal = "ABCDEFGHI".toCharArray();
     int[] diagonal = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
     private Marble[] fields;
@@ -52,9 +49,10 @@ public class Board {
         }
         return copy;
     }
-    
+
     /**
      * Removes all the marbles of a player (upon forfeit).
+     * 
      * @param player whose marbles need to be removed
      */
     public void removeMarbles(Player player) {
@@ -81,17 +79,21 @@ public class Board {
         }
         return j;
     }
-    
+
+    /**
+     * Returns all indexes for which the marble is the parameter's marble.
+     * @param marble to search for
+     * @return all marble fields
+     */
     public List<Integer> getMyMarbles(Marble marble) {
-    	List<Integer> getMyMarbles = new ArrayList<Integer>();
-    for(int i = 0; i < Board.size; i++) {
-    	if(getMarble(i) == marble ) {
-    		getMyMarbles.add(i);
-    	}
-    	}
-	return getMyMarbles;
+        List<Integer> getMyMarbles = new ArrayList<Integer>();
+        for (int i = 0; i < Board.size; i++) {
+            if (getMarble(i) == marble) {
+                getMyMarbles.add(i);
+            }
+        }
+        return getMyMarbles;
     }
-    
 
     /**
      * Converts a combination of horizontal and diagonal coordinate to index.
@@ -375,7 +377,8 @@ public class Board {
             int ball2 = -1;
             Marble teamMate = marble.next(4).next(4);
             for (int i = 0; i < 6 && !nextTo; i++) { // test if moving three balls
-                if ((ball2 = player.marbleTo(copy, lasthor, lastdiai, Direction.values()[i])) == getIndex(firsthor, firstdiai)) {
+                if ((ball2 = player.marbleTo(copy, lasthor, lastdiai, Direction.values()[i])) == getIndex(firsthor,
+                        firstdiai)) {
                     nextTo = true;
                 }
             }

@@ -213,6 +213,11 @@ public class Game {
         return null;
     }
 
+    /**
+     * Returns the teammate of the player with name of parameter.
+     * @param name of player to find teammate of
+     * @return teammate of player with this name or null if no teammate
+     */
     public Player getTeamMate(String name) {
         if (playerAmount == 4) {
             int index = -1;

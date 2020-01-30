@@ -67,14 +67,18 @@ public abstract class Player {
         return result;
     }
 
+    /**
+     * Returns the field this marble is going towards.
+     * 
+     * @return next field or -1 if offboard
+     */
     public int marbleTo(Board board, int i, Direction dir) {
         String[] coords;
         int result;
         try {
             coords = board.getCoords(i).split(",");
             result = marbleTo(board, coords[0].charAt(0), Integer.parseInt(coords[1]), dir);
-        }
-        catch (OffBoardException e) {
+        } catch (OffBoardException e) {
             return -1;
         }
         return result;
@@ -110,7 +114,7 @@ public abstract class Player {
                 || marbleTo(board, lasthor, lastdiai, dir) == board.getIndex(firsthor, firstdiai)
                 || marbleTo(board, marbleTo(board, lasthor, lastdiai, dir), dir) == board.getIndex(firsthor, firstdiai);
     }
-    
+
     /**
      * Makes sure the coordinate is in the format INTEGER, CHARACTER.
      * 
@@ -190,12 +194,12 @@ public abstract class Player {
             int toMarblei;
             if ((toMarble = board.getMarble((toMarblei = marbleTo(board, firsthor, firstdiai, dir)))) == Marble.EMPTY) {
                 board.setField(toMarblei, board.getMarble(firsthor, firstdiai));
-                board.setField(firsthor, firstdiai, board.getMarble(lasthor,lastdiai));
+                board.setField(firsthor, firstdiai, board.getMarble(lasthor, lastdiai));
                 board.setField(board.getIndex(lasthor, lastdiai), Marble.EMPTY);
                 if (hasThree) {
                     board.setField(firsthor, firstdiai, board.getMarble(ball2));
                     board.setField(ball2, marble);
-                    }
+                }
             } else { // if bumping into another player
                 upTwo = marbleTo(board, toMarblei, dir);
                 upThree = marbleTo(board, upTwo, dir);
@@ -234,7 +238,9 @@ public abstract class Player {
     }
 
     /**
-     * Allows the player to make a move by determining the move and setting the fields.
+     * Allows the player to make a move by determining the move and setting the
+     * fields.
+     * 
      * @param board of the game
      */
     public void makeMove(Board board) {

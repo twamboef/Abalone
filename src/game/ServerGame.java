@@ -26,11 +26,11 @@ public class ServerGame extends Game implements Runnable {
         }
         play();
     }
-    
+
     @Override
     public void play() {
         while (!gameOver() && getTurnCount() < 96) {
-            synchronized(moveHappened) {
+            synchronized (moveHappened) {
                 try {
                     moveHappened.wait();
                 } catch (InterruptedException e) {
@@ -40,12 +40,16 @@ public class ServerGame extends Game implements Runnable {
             current = current.next(playerAmount);
             turnCount = getTurnCount() + 1;
         }
-    } 
-    
+    }
+
+    /**
+     * Returns a string with the result of this game.
+     * @return winner/winners/draw
+     */
     public String getResult() {
         for (Player p : players) {
             if (board.getPlayers() != 4 && p.getPoints() >= 6) {
-               return p.getName() + " won!";
+                return p.getName() + " won!";
             } else if (board.getPlayers() == 4) {
                 for (Player ps : players) {
                     if (ps.getMarble() == p.getMarble().next(4).next(4)) {
@@ -54,7 +58,7 @@ public class ServerGame extends Game implements Runnable {
                         }
                     }
                 }
-            }   
+            }
         }
         return "96 turns have passed. It's a draw!";
     }
