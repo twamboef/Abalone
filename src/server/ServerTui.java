@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-public class ServerTUI implements ServerView {
+public class ServerTui implements ServerView {
 
     private PrintWriter consoleout;
     private BufferedReader consolein;
@@ -15,7 +15,7 @@ public class ServerTUI implements ServerView {
      * 
      * @ensures new ServerTUI object with autoflushing PrintWriter
      */
-    public ServerTUI() {
+    public ServerTui() {
         consoleout = new PrintWriter(System.out, true);
         consolein = new BufferedReader(new InputStreamReader(System.in));
     }

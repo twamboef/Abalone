@@ -1,5 +1,7 @@
 package server;
 
+import game.Board;
+import game.Player;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -8,9 +10,6 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
-import game.Board;
-import game.Player;
 import protocol.ProtocolMessages;
 
 public class ClientHandler implements Runnable {
@@ -103,7 +102,7 @@ public class ClientHandler implements Runnable {
                     joinLobby();
                     Lobby lobby = server.getLobby(name);
                     for (String player : lobby.getPlayers()) {
-                            server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
+                        server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
                     }
                 }
                 break;
@@ -114,7 +113,7 @@ public class ClientHandler implements Runnable {
                 if (result.contains("200")) {
                     leaveLobby();
                     for (String player : lobby.getPlayers()) {
-                            server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
+                        server.getClientHandler(player).writeLine(server.lobbyChanged(lobby));
                     }
                 }
                 break;
@@ -149,8 +148,8 @@ public class ClientHandler implements Runnable {
             case ProtocolMessages.MOVE:
                 Player playr = server.getGame(name).getCurrentPlayer();
                 Board brd = server.getGame(name).getBoard();
-                String move = playr.makeGoodFormat(brd, parm1) + ProtocolMessages.DELIMITER + playr.makeGoodFormat(brd, parm2)
-                + ProtocolMessages.DELIMITER + parm3;
+                String move = playr.makeGoodFormat(brd, parm1) + ProtocolMessages.DELIMITER 
+                        + playr.makeGoodFormat(brd, parm2) + ProtocolMessages.DELIMITER + parm3;
                 writeLine(result = server.makeMove(name, move));
                 String line = server.sendMove(name, move);
                 if (result.contains("200")) {
@@ -274,6 +273,11 @@ public class ClientHandler implements Runnable {
         }
     }
     
+    /**
+     * Write line to client.
+     * @param line to send
+     * @throws IOException if socket is closed
+     */
     public void writeLine(String line) throws IOException {
         System.out.println("--> Sent to " + name + ": "  + line);
         out.write(line);

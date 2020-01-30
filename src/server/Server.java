@@ -7,7 +7,6 @@ import game.Game;
 import game.Marble;
 import game.Player;
 import game.ServerGame;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -22,8 +21,8 @@ public class Server implements Runnable, ServerProtocol {
     private List<ClientHandler> clients;
     private List<Lobby> lobbies;
     private List<ServerGame> games;
-    private ServerTUI view;
-    private int next_client_no;
+    private ServerTui view;
+    private int nextClientNo;
 
     /**
      * String consisting of ";200;".
@@ -37,8 +36,8 @@ public class Server implements Runnable, ServerProtocol {
         clients = new ArrayList<>();
         lobbies = new ArrayList<>();
         games = new ArrayList<>();
-        view = new ServerTUI();
-        next_client_no = 1;
+        view = new ServerTui();
+        nextClientNo = 1;
     }
 
     @Override
@@ -49,8 +48,7 @@ public class Server implements Runnable, ServerProtocol {
                 setup();
                 while (true) {
                     Socket sock = ssock.accept();
-                    String name = "NewClient " 
-                            + String.format("%02d", next_client_no++);
+                    String name = "NewClient " + String.format("%02d", nextClientNo++);
                     view.showMessage("[" + name + "] connected!");
                     ClientHandler handler = new ClientHandler(sock, this, name);
                     new Thread(handler).start();
@@ -229,10 +227,10 @@ public class Server implements Runnable, ServerProtocol {
         return ProtocolMessages.READY + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                 + ProtocolMessages.DELIMITER;
     }
-    
+
     public String readyChange(Lobby lobby) {
-        return ProtocolMessages.READY + ProtocolMessages.DELIMITER 
-        + lobby.getReadyAmount() + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.READY + ProtocolMessages.DELIMITER + lobby.getReadyAmount()
+                + ProtocolMessages.DELIMITER;
     }
 
     @Override
@@ -298,8 +296,9 @@ public class Server implements Runnable, ServerProtocol {
     public String makeMove(String name, String move) {
         System.out.println(getGame(name).getTurnCount());
         try {
-            if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name) || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
-                    getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
+            if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name)
+                    || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(),
+                            getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
                         + ProtocolMessages.DELIMITER;
             }
@@ -365,8 +364,8 @@ public class Server implements Runnable, ServerProtocol {
             getGame(name).playerForfeit(name);
             return ProtocolMessages.FORFEIT + delimSuccess;
         }
-        return ProtocolMessages.FORFEIT + ProtocolMessages.DELIMITER 
-                + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.FORFEIT + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                + ProtocolMessages.DELIMITER;
     }
 
     @Override
@@ -382,32 +381,30 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String challengePlayer(String challenger, String target) {
-        if (challenger.equals(target) || getClientHandler(target) == null || getLobby(challenger) != null 
+        if (challenger.equals(target) || getClientHandler(target) == null || getLobby(challenger) != null
                 || getLobby(target) != null || getGame(challenger) != null || getGame(target) != null) {
-            return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
-                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+            return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                    + ProtocolMessages.DELIMITER;
         }
         getClientHandler(target).challengedBy = challenger;
         return ProtocolMessages.CHALL + delimSuccess;
     }
 
     public String sendChallenge(String challenger) {
-        return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER 
-                + challenger + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.CHALL + ProtocolMessages.DELIMITER + challenger + ProtocolMessages.DELIMITER;
     }
-    
+
     @Override
     public String challengeAccept(String accepter, String challenger) {
         if (getClientHandler(challenger) == null) {
             getClientHandler(accepter).challengedBy = "";
         }
-        if (!getClientHandler(accepter).challengedBy.equals(challenger)
-                || getLobby(challenger) != null || getLobby(accepter) != null
-                || getGame(challenger) != null || getGame(accepter) != null) {   
-            return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER
-                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+        if (!getClientHandler(accepter).challengedBy.equals(challenger) || getLobby(challenger) != null
+                || getLobby(accepter) != null || getGame(challenger) != null || getGame(accepter) != null) {
+            return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                    + ProtocolMessages.DELIMITER;
         }
-        Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(),2);
+        Lobby lobby = new Lobby("challenge-" + challenger.toUpperCase() + "v" + accepter.toUpperCase(), 2);
         lobby.join(challenger);
         lobby.join(accepter);
         lobbies.add(lobby);
@@ -417,46 +414,45 @@ public class Server implements Runnable, ServerProtocol {
     }
 
     public String sendChallengeAccept(String accepter) {
-        return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER
-                + accepter + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.CHALLACC + ProtocolMessages.DELIMITER + accepter + ProtocolMessages.DELIMITER;
     }
-    
+
     @Override
     public String sendPM(String receiver, String message) {
         if (message.equals("")) {
-            return ProtocolMessages.PM + ProtocolMessages.DELIMITER 
-                    + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
+            return ProtocolMessages.PM + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
+                    + ProtocolMessages.DELIMITER;
         }
         if (getClientHandler(receiver) == null) {
-            return ProtocolMessages.PM + ProtocolMessages.DELIMITER 
-                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER;
+            return ProtocolMessages.PM + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                    + ProtocolMessages.DELIMITER;
         }
         return ProtocolMessages.PM + delimSuccess;
     }
 
     @Override
     public String receivePM(String sender, String message) {
-        return ProtocolMessages.PMRECV + ProtocolMessages.DELIMITER + sender 
-                + ProtocolMessages.DELIMITER + message + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.PMRECV + ProtocolMessages.DELIMITER + sender + ProtocolMessages.DELIMITER + message
+                + ProtocolMessages.DELIMITER;
     }
 
     @Override
     public String sendLM(String name, String message) {
         if (getLobby(name) == null) {
-            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER 
-                    + ProtocolMessages.FORBIDDEN + ProtocolMessages.DELIMITER; 
+            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
+                    + ProtocolMessages.DELIMITER;
         }
         if (message.equals("")) {
-            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER 
-            + ProtocolMessages.MALFORMED + ProtocolMessages.DELIMITER;
+            return ProtocolMessages.LMSG + ProtocolMessages.DELIMITER + ProtocolMessages.MALFORMED
+                    + ProtocolMessages.DELIMITER;
         }
         return ProtocolMessages.LMSG + delimSuccess;
     }
 
     @Override
     public String receiveLM(String sender, String message) {
-        return ProtocolMessages.LMSGRECV + ProtocolMessages.DELIMITER + sender
-                + ProtocolMessages.DELIMITER + message + ProtocolMessages.DELIMITER;
+        return ProtocolMessages.LMSGRECV + ProtocolMessages.DELIMITER + sender + ProtocolMessages.DELIMITER + message
+                + ProtocolMessages.DELIMITER;
     }
 
     @Override
@@ -464,8 +460,7 @@ public class Server implements Runnable, ServerProtocol {
         String result = ProtocolMessages.LEADERBOARD + delimSuccess;
         for (ClientHandler p : clients) {
             if (p != null) {
-                    result += p.getName() + ProtocolMessages.SEPERATOR 
-                    + p.getPoints() + ProtocolMessages.DELIMITER;
+                result += p.getName() + ProtocolMessages.SEPERATOR + p.getPoints() + ProtocolMessages.DELIMITER;
             }
         }
         return result;
