@@ -296,8 +296,8 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String makeMove(String name, String move) {
+        System.out.println(getGame(name).getTurnCount());
         try {
-            view.showMessage(getGame(name).getCurrentPlayer().getName());
             if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name) || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(), 
                     getGame(name).getCurrentPlayer().makeLeadingFirst(getGame(name).getBoard(), move))) {
                 return ProtocolMessages.MOVE + ProtocolMessages.DELIMITER + ProtocolMessages.FORBIDDEN
@@ -305,7 +305,6 @@ public class Server implements Runnable, ServerProtocol {
             }
             ClientPlayer p = (ClientPlayer) getGame(name).getCurrentPlayer();
             p.makeMove(getGame(name).getBoard(), move);
-            view.showMessage(getGame(name).getBoard().toString());
             synchronized (getGame(name).moveHappened) {
                 getGame(name).moveHappened.notifyAll();
             }

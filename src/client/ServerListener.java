@@ -4,10 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import exceptions.OffBoardException;
 import exceptions.ServerUnavailableException;
 import game.ClientPlayer;
+import game.ComputerPlayer;
+import game.Marble;
 import game.Player;
 import game.ServerGame;
 import protocol.ProtocolMessages;
@@ -15,10 +18,10 @@ import protocol.ProtocolMessages;
 public class ServerListener implements Runnable {
     private BufferedReader in;
     private Client client;
-    private ClientTUI TUI;
+    private ClientTui TUI;
     private Socket sock;
 
-    public ServerListener(Socket sock, Client client, ClientTUI TUI) {
+    public ServerListener(Socket sock, Client client, ClientTui TUI) {
         try {
             in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             this.sock = sock;
@@ -161,12 +164,42 @@ public class ServerListener implements Runnable {
             break;
         case ProtocolMessages.START:
             client.createGame(input);
+            if (TUI instanceof BotClientTui) {
+                if (parm1.equals(client.getName())) {
+                    ((BotClientTui) TUI).computer = new ComputerPlayer(client.getName(),
+                            Marble.BLACK);
+                } else if (sinput[2].equals(client.getName())) {
+                    ((BotClientTui) TUI).computer = new ComputerPlayer(client.getName(),
+                            Marble.WHITE);
+                    if (client.getGame().getPlayerAmount() == 3) {
+                        ((BotClientTui) TUI).computer.setMarble(Marble.BLUE);
+                    }
+                } else if (sinput[3].equals(client.getName())) {
+                    ((BotClientTui) TUI).computer = new ComputerPlayer(client.getName(),
+                            Marble.BLUE);
+                    if (client.getGame().getPlayerAmount() == 3) {
+                        ((BotClientTui) TUI).computer.setMarble(Marble.WHITE);
+                    }
+                } else {
+                    ((BotClientTui) TUI).computer = new ComputerPlayer(client.getName(),
+                            Marble.RED);
+                }
+            }
             new Thread(((ServerGame) client.getGame())).start();
             TUI.showMessage("Game started!");
             if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
                 TUI.showMessage(client.getGame().getBoard().toString());
                 TUI.showMessage("\nIt's your turn first. Your color is " + client.getGame().getCurrentPlayer().getMarble());
-                TUI.showMessage("To make a move, type MOVE");
+                if (TUI instanceof BotClientTui) {
+                    try {
+                        TimeUnit.SECONDS.sleep(1);
+                        ((BotClientTui) TUI).doMove();
+                    } catch (ServerUnavailableException  | InterruptedException e1) {
+                        shutDown();
+                    }
+                } else {
+                    TUI.showMessage("To make a move, type MOVE");
+                }
             } else {
                 TUI.showMessage("Waiting until it's your turn...");
             }
@@ -179,6 +212,14 @@ public class ServerListener implements Runnable {
                 parmi = Integer.parseInt(parm1);
                 if (parmi > 200) {
                     TUI.showMessage("Move rejected by server");
+                    if (TUI instanceof BotClientTui) {
+                        try {
+                            TimeUnit.SECONDS.sleep(1);
+                            ((BotClientTui) TUI).doMove();
+                        } catch (ServerUnavailableException | InterruptedException e1) {
+                            shutDown();
+                        }
+                    }
                 }
             } catch (NumberFormatException e) {
                 try {
@@ -205,21 +246,23 @@ public class ServerListener implements Runnable {
                 TUI.showMessage(client.getGame().getBoard().toString());
                 if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
                     TUI.showMessage("It's your turn! Your color is " + client.getGame().getCurrentPlayer().getMarble());
-                    TUI.showMessage("To make a move, type MOVE");
+                    if (TUI instanceof BotClientTui) {
+                        try {
+                            TimeUnit.SECONDS.sleep(1);
+                            ((BotClientTui) TUI).doMove();
+                        } catch (ServerUnavailableException | InterruptedException e1) {
+                            shutDown();
+                        }
+                    } else {
+                        TUI.showMessage("To make a move, type MOVE");
+                    }
                 } else {
                     TUI.showMessage("Waiting until it's your turn...");
                 }
             }
             break;
         case ProtocolMessages.FINISH:
-            if (parm1.equals("")) {
-                TUI.showMessage("Game finished! It's a draw!");
-            } else if (client.getGame().getPlayerAmount() < 4) {
-                TUI.showMessage("Game finished! Winner: " + parm1);
-            } else {
-                TUI.showMessage("Game finished! Winners: " + parm1 
-                        + " and " + client.getGame().getTeamMate(parm1).getName());
-            }
+            TUI.showMessage(((ServerGame) client.getGame()).getResult());
             TUI.showMessage("\n\nPlease enter a command.");
             TUI.showMessage("For help, type HELP");
             client.clearGame();

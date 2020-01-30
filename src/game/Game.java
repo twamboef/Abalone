@@ -5,7 +5,7 @@ import exceptions.OffBoardException;
 public class Game {
     public static int playerAmount;
     protected Board board;
-    private Player[] players;
+    protected Player[] players;
     protected Marble current;
     protected int turnCount;
 
@@ -102,7 +102,7 @@ public class Game {
             }
             System.out.println(board.toString());
             current = current.next(playerAmount);
-            turnCount++;
+            turnCount = getTurnCount() + 1;
         }
 
     }
@@ -153,7 +153,7 @@ public class Game {
      * @return game finished or not
      */
     public boolean gameOver() {
-        return (getWinner() != null || turnCount >= 1000);
+        return (getWinner() != null || getTurnCount() >= 96);
     }
 
     /**
@@ -181,6 +181,10 @@ public class Game {
             }
         }
         return null;
+    }
+
+    public int getTurnCount() {
+        return turnCount;
     }
 
     public Board getBoard() {

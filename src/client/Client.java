@@ -1,21 +1,19 @@
 package client;
 
-
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.Socket;
-
+import exceptions.ExitProgram;
+import exceptions.OffBoardException;
+import exceptions.ProtocolException;
+import exceptions.ServerUnavailableException;
 import game.ClientPlayer;
 import game.Game;
 import game.Marble;
 import game.Player;
 import game.ServerGame;
-import exceptions.ExitProgram;
-import exceptions.OffBoardException;
-import exceptions.ProtocolException;
-import exceptions.ServerUnavailableException;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 import protocol.ClientProtocol;
 import protocol.ProtocolMessages;
 import server.Server;
@@ -29,44 +27,53 @@ public class Client implements ClientProtocol {
     public boolean connected = false;
     private Game currentGame = null;
 
-    private ServerListener SL;
-    private ClientTUI TUI;
+    private ServerListener sl;
+    private ClientTui tui;
 
     public Client() throws IOException {
-        TUI = new ClientTUI(this);
+        tui = new ClientTui(this);
     }
 
+    /**
+     * Starts a connection and TUI.
+     * 
+     * @throws ExitProgram if user wants to exit
+     * @throws IOException if createConnection() throws this
+     */
     public void start() throws ExitProgram, IOException {
         try {
             Thread t;
-            TUI.showMessage("Starting Abalone client...");
+            tui.showMessage("Starting Abalone client...");
             while (true) {
                 t = null;
                 createConnection();
-                TUI.handleUserInput(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name
+                tui.handleUserInput(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name
                         + ProtocolMessages.DELIMITER + ProtocolMessages.DELIMITER);
-                
-                t = new Thread(SL);
+
+                t = new Thread(sl);
                 t.start();
-                synchronized(serverSocket) {
+                synchronized (serverSocket) {
                     serverSocket.wait();
                 }
                 if (connected) {
-                    TUI.showMessage("Successfully connected!");
+                    tui.showMessage("Successfully connected!");
                     break;
                 }
-                TUI.showMessage("Failed to connect, please try again\n");
+                tui.showMessage("Failed to connect, please try again\n");
             }
-            TUI.start();
+            tui.start();
         } catch (ExitProgram e) {
-            TUI.showMessage("Disconnected.");
+            tui.showMessage("Disconnected.");
             return;
         } catch (ServerUnavailableException e) {
+            // do nothing
         } catch (InterruptedException e) {
+            // do nothing
         } catch (ProtocolException e) {
+            // do nothing
         }
-        if (TUI.getBoolean("ERROR: server connection broke. Try again? (y/n)")) {
-
+        if (tui.getBoolean("ERROR: server connection broke. Try again? (y/n)")) {
+            // enter while loop again
         } else {
             throw new ExitProgram("User indicated to exit.");
         }
@@ -75,30 +82,33 @@ public class Client implements ClientProtocol {
     /**
      * Creates a connection to the server. Requests the IP and port to connect to at
      * the view (TUI).
-     * 
      * The method continues to ask for an IP and port and attempts to connect until
      * a connection is established or until the user indicates to exit the program.
-     * 
      * @throws ExitProgram if a connection is not established and the user indicates
      *                     to want to exit the program.
+     * @throws IOException if clearConnection() throws this
      * @ensures serverSock contains a valid socket connection to a server
      */
-    public void createConnection() throws ExitProgram {
+    public void createConnection() throws ExitProgram, IOException {
         clearConnection();
         while (serverSocket == null) {
-            name = TUI.getString("What is your name?");
-            String host = TUI.getString("What IP would you like to connect to?");
-            int port = TUI.getInt("What port would you like to use? ");
+            name = tui.getString("What is your name?");
+            if (tui.getBoolean("Do you want to be a ComputerPlayer? (y/n)")) {
+                tui = new BotClientTui(this);
+                name = "BOT-" + name;
+            }
+            String host = tui.getString("What IP would you like to connect to?");
+            int port = tui.getInt("What port would you like to use? ");
             // try to open a Socket to the server
             try {
                 InetAddress addr = InetAddress.getByName(host);
-                TUI.showMessage("Attempting to connect to " + addr + ":" + port + "...");
+                tui.showMessage("Attempting to connect to " + addr + ":" + port + "...");
                 serverSocket = new Socket(addr, port);
                 out = new BufferedWriter(new OutputStreamWriter(serverSocket.getOutputStream()));
-                SL = new ServerListener(serverSocket, this, TUI);
+                sl = new ServerListener(serverSocket, this, tui);
             } catch (IOException e) {
-                TUI.showMessage("ERROR: could not create a socket on " + host + " and port " + port + ".");
-                if (!TUI.getBoolean("Try again? (y/n)")) {
+                tui.showMessage("ERROR: could not create a socket on " + host + " and port " + port + ".");
+                if (!tui.getBoolean("Try again? (y/n)")) {
                     throw new ExitProgram("User indicated to exit.");
                 }
             }
@@ -107,7 +117,6 @@ public class Client implements ClientProtocol {
 
     /**
      * Resets the serverSocket and In- and OutputStreams to null.
-     * 
      * Always make sure to close current connections via shutdown() before calling
      * this method!
      */
@@ -116,6 +125,11 @@ public class Client implements ClientProtocol {
         out = null;
     }
 
+    /**
+     * Sends a message to the server.
+     * @param msg message to send
+     * @throws ServerUnavailableException if server is unavailable
+     */
     public void sendMessage(String msg) throws ServerUnavailableException {
         if (out != null) {
             try {
@@ -123,7 +137,7 @@ public class Client implements ClientProtocol {
                 out.newLine();
                 out.flush();
             } catch (IOException e) {
-                TUI.showMessage(e.getMessage());
+                tui.showMessage(e.getMessage());
                 throw new ServerUnavailableException("Could not write to the server");
             }
         } else {
@@ -131,6 +145,10 @@ public class Client implements ClientProtocol {
         }
     }
 
+    /**
+     * When a move is received, this is sent to the game so that it is synced.
+     * @param line with move, e.g. MOVE;1,A;1,A;3;
+     */
     public void processMove(String line) {
         String[] movesplit = line.split(ProtocolMessages.DELIMITER);
         String move = movesplit[2] + ProtocolMessages.DELIMITER + movesplit[3] + ProtocolMessages.DELIMITER
@@ -142,8 +160,8 @@ public class Client implements ClientProtocol {
             // Client should always send correct move
         }
     }
-    
-    //TODO
+
+    // TODO
     @Override
     public void connect(String name) throws ProtocolException, ServerUnavailableException {
         sendMessage(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER);
@@ -183,10 +201,11 @@ public class Client implements ClientProtocol {
     public void makeMove(String move) throws ServerUnavailableException {
         String[] smove = move.split(";");
         try {
-            move = currentGame.getCurrentPlayer().makeLeadingFirst(currentGame.getBoard(), 
+            move = currentGame.getCurrentPlayer().makeLeadingFirst(currentGame.getBoard(),
                     currentGame.getCurrentPlayer().makeGoodFormat(currentGame.getBoard(), smove[0].toUpperCase())
-                    + ProtocolMessages.DELIMITER + currentGame.getCurrentPlayer().makeGoodFormat(
-                            currentGame.getBoard(), smove[1].toUpperCase()) + ProtocolMessages.DELIMITER + smove[2]);
+                            + ProtocolMessages.DELIMITER + currentGame.getCurrentPlayer()
+                                    .makeGoodFormat(currentGame.getBoard(), smove[1].toUpperCase())
+                            + ProtocolMessages.DELIMITER + smove[2]);
         } catch (OffBoardException e) {
             e.printStackTrace();
         }
@@ -227,7 +246,11 @@ public class Client implements ClientProtocol {
     public void getLeaderboard() throws ServerUnavailableException {
         sendMessage(ProtocolMessages.LEADERBOARD + ProtocolMessages.DELIMITER);
     }
-    
+
+    /**
+     * Creates a new game.
+     * @param line with players for this game
+     */
     public void createGame(String line) {
         String[] sline = line.split(";");
         int playerAmount = sline.length - 1;
@@ -244,19 +267,22 @@ public class Client implements ClientProtocol {
             currentGame = new ServerGame(p1, p2, p3, p4);
         }
     }
-    
+
     public void clearGame() {
         currentGame = null;
     }
-    
+
     public Game getGame() {
         return currentGame;
     }
-    
+
     public String getName() {
         return name;
     }
 
+    /**
+     * Closes this client.
+     */
     public void shutDown() {
         try {
             out.close();
@@ -266,13 +292,6 @@ public class Client implements ClientProtocol {
         }
     }
 
-    /**
-     * This method starts a new Client.
-     * 
-     * @param args
-     * @throws IOException
-     * @throws ExitProgram
-     */
     public static void main(String[] args) throws ExitProgram, IOException {
         (new Client()).start();
     }

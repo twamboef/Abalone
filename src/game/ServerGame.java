@@ -24,13 +24,12 @@ public class ServerGame extends Game implements Runnable {
         } catch (OffBoardException e) {
             e.printStackTrace();
         }
-        this.play();
-        printResult();
+        play();
     }
     
     @Override
     public void play() {
-        while (!gameOver() && turnCount < 96) {
+        while (!gameOver() && getTurnCount() < 96) {
             synchronized(moveHappened) {
                 try {
                     moveHappened.wait();
@@ -39,7 +38,24 @@ public class ServerGame extends Game implements Runnable {
                 }
             }
             current = current.next(playerAmount);
-            turnCount++;
+            turnCount = getTurnCount() + 1;
         }
     } 
+    
+    public String getResult() {
+        for (Player p : players) {
+            if (board.getPlayers() != 4 && p.getPoints() >= 6) {
+               return p.getName() + " won!";
+            } else if (board.getPlayers() == 4) {
+                for (Player ps : players) {
+                    if (ps.getMarble() == p.getMarble().next(4).next(4)) {
+                        if (p.getPoints() + ps.getPoints() >= 6) {
+                            return "Team " + p.getName() + " & " + ps.getName() + " won!";
+                        }
+                    }
+                }
+            }   
+        }
+        return "96 turns have passed. It's a draw!";
+    }
 }

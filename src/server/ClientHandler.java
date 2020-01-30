@@ -158,9 +158,14 @@ public class ClientHandler implements Runnable {
                     writeToGameClients(line);
                 }
                 if (server.getGame(name).gameOver()) {
+                    List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+                    for (String p : server.getLobby(name).getPlayers()) {
+                        clientHandlers.add(server.getClientHandler(p));
+                    }
                     result = server.gameFinish(server.getGame(name));
-                    writeLine(result);
-                    writeToGameClients(result);
+                    for (ClientHandler ch : clientHandlers) {
+                        ch.writeLine(result);
+                    }
                 }
                 break;
             case ProtocolMessages.FORFEIT:

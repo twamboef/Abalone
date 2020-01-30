@@ -12,14 +12,14 @@ import exceptions.ServerUnavailableException;
 import game.Direction;
 import protocol.ProtocolMessages;
 
-public class ClientTUI implements ClientView {
+public class ClientTui implements ClientView {
     public Object Ack = new Object();
-    private Client client;
+    protected Client client;
     private BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
 
     private boolean invalidCommand;
     
-    public ClientTUI(Client cl) throws IOException {
+    public ClientTui(Client cl) throws IOException {
         this.client = cl;
     }
 
@@ -75,15 +75,7 @@ public class ClientTUI implements ClientView {
             client.doUnready();
             break;
         case ProtocolMessages.MOVE:
-            StringBuilder sb = new StringBuilder();
-            sb.append("In which direction?\n");
-            for (int i = 0; i < 6; i++) {
-                sb.append("\n" + i + ": " + Direction.values()[i]);
-            }
-            sb.append("\n");
-            client.makeMove(getString("What is one of the outer marbles you want to move?") + ProtocolMessages.DELIMITER
-                    + getString("What is the other outer marble you want to move?") + ProtocolMessages.DELIMITER
-                    + getInt(sb.toString()));
+            doMove();
             break;
         case ProtocolMessages.FORFEIT:
             client.playerForfeit();
@@ -161,6 +153,18 @@ public class ClientTUI implements ClientView {
             showMessage("Please enter y/n");
             return getBoolean(question);
         }
+    }
+    
+    public void doMove() throws ServerUnavailableException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("In which direction?\n");
+        for (int i = 0; i < 6; i++) {
+            sb.append("\n" + i + ": " + Direction.values()[i]);
+        }
+        sb.append("\n");
+        client.makeMove(getString("What is one of the outer marbles you want to move?") + ProtocolMessages.DELIMITER
+                + getString("What is the other outer marble you want to move?") + ProtocolMessages.DELIMITER
+                + getInt(sb.toString()));
     }
 
     public String printHelpMenu() {
