@@ -95,10 +95,10 @@ public class Game {
                     System.out.println(p.getName() + "'s points: " + p.getPoints());
                 }
             } else {
-                System.out.println("Team " + players[0].getName() + " & " + players[1].getName() 
-                        + "'s points: " + (players[0].getPoints() + players[1].getPoints()));
-                System.out.println("Team " + players[2].getName() + " & " + players[3].getName() 
-                        + "'s points: " + (players[2].getPoints() + players[3].getPoints()));
+                System.out.println("Team " + players[0].getName() + " & " + players[1].getName() + "'s points: "
+                        + (players[0].getPoints() + players[1].getPoints()));
+                System.out.println("Team " + players[2].getName() + " & " + players[3].getName() + "'s points: "
+                        + (players[2].getPoints() + players[3].getPoints()));
             }
             System.out.println(board.toString());
             current = current.next(playerAmount);
@@ -108,8 +108,9 @@ public class Game {
     }
 
     /**
-     * Makes a player forfeit the game.
-     * This results in an instant win in case of 2 and 4 player games.
+     * Makes a player forfeit the game. This results in an instant win in case of 2
+     * and 4 player games.
+     * 
      * @param player who wants to forfeit
      */
     public void playerForfeit(String player) {
@@ -168,7 +169,7 @@ public class Game {
     public Player[] getPlayers() {
         return players;
     }
-    
+
     /**
      * Returns the player who is now in turn.
      * 
@@ -215,6 +216,7 @@ public class Game {
 
     /**
      * Returns the teammate of the player with name of parameter.
+     * 
      * @param name of player to find teammate of
      * @return teammate of player with this name or null if no teammate
      */
@@ -239,28 +241,24 @@ public class Game {
         }
         return null;
     }
-    
+
     /**
      * Prints the result of the game to the standard output (winner/winners/draw).
      * 
      * @ensures result != null
      */
     public void printResult() {
-        for (Player p : players) {
-            if (board.getPlayers() != 4 && p.getPoints() >= 6) {
-                System.out.println(p.getName() + " won!");
-                return;
-            } else if (board.getPlayers() == 4) {
-                for (Player ps : players) {
-                    if (ps.getMarble() == p.getMarble().next(4).next(4)) {
-                        if (p.getPoints() + ps.getPoints() >= 6) {
-                            System.out.println("Team " + p.getName() + " & " + ps.getName() + " won!");
-                            return;
-                        }
-                    }
+        if (board.getPlayers() != 4 && getWinner() != null) {
+            System.out.println(getWinner().getName() + " won!");
+            return;
+        } else if (board.getPlayers() == 4) {
+            for (Player ps : players) {
+                if (ps.getMarble() == getWinner().getMarble().next(4).next(4)) {
+                    System.out.println("Team " + getWinner().getName() + " & " + ps.getName() + " won!");
+                    return;
                 }
             }
-            System.out.println("96 turns have passed. It's a draw!");
         }
+        System.out.println("96 turns have passed. It's a draw!");
     }
 }

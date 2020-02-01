@@ -196,9 +196,8 @@ public class ServerListener implements Runnable {
                             "\nIt's your turn first. Your color is " + client.getGame().getCurrentPlayer().getMarble());
                     if (tui instanceof BotClientTui) {
                         try {
-                            TimeUnit.SECONDS.sleep(1);
                             ((BotClientTui) tui).doMove();
-                        } catch (ServerUnavailableException | InterruptedException e1) {
+                        } catch (ServerUnavailableException e1) {
                             shutDown();
                         }
                     } else {
@@ -216,11 +215,10 @@ public class ServerListener implements Runnable {
                     parmi = Integer.parseInt(parm1);
                     if (parmi > 200) {
                         tui.showMessage("Move rejected by server");
-                        if (tui instanceof BotClientTui) {
+                        if (tui instanceof BotClientTui && client.getGame() != null) {
                             try {
-                                TimeUnit.SECONDS.sleep(1);
                                 ((BotClientTui) tui).doMove();
-                            } catch (ServerUnavailableException | InterruptedException e1) {
+                            } catch (ServerUnavailableException e1) {
                                 shutDown();
                             }
                         }
@@ -248,14 +246,18 @@ public class ServerListener implements Runnable {
                                 + (players[2].getPoints() + players[3].getPoints()));
                     }
                     tui.showMessage(client.getGame().getBoard().toString());
+                    try {
+                        TimeUnit.MILLISECONDS.sleep(100);
+                    } catch (InterruptedException e2) {
+                        e2.printStackTrace();
+                    }
                     if (client.getGame().getCurrentPlayer().getName().equals(client.getName())) {
                         tui.showMessage("It's your turn! Your color is " 
                                 + client.getGame().getCurrentPlayer().getMarble());
                         if (tui instanceof BotClientTui) {
                             try {
-                                TimeUnit.SECONDS.sleep(1);
                                 ((BotClientTui) tui).doMove();
-                            } catch (ServerUnavailableException | InterruptedException e1) {
+                            } catch (ServerUnavailableException e1) {
                                 shutDown();
                             }
                         } else {

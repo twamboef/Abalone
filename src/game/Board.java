@@ -431,6 +431,9 @@ public class Board {
                 }
             }
             if (player.isInLine(copy, move)) {
+                if (getMarble(player.marbleTo(copy, firsthor, firstdiai, dir)) == null) {
+                    return false;
+                }
                 if (getMarble(lasthor, lastdiai) != marble) {
                     return false;
                 }

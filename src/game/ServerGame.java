@@ -29,7 +29,7 @@ public class ServerGame extends Game implements Runnable {
 
     @Override
     public void play() {
-        while (!gameOver() && getTurnCount() < 96) {
+        while (!gameOver()) {
             synchronized (moveHappened) {
                 try {
                     moveHappened.wait();
@@ -44,19 +44,16 @@ public class ServerGame extends Game implements Runnable {
 
     /**
      * Returns a string with the result of this game.
+     * 
      * @return winner/winners/draw
      */
     public String getResult() {
-        for (Player p : players) {
-            if (board.getPlayers() != 4 && p.getPoints() >= 6) {
-                return p.getName() + " won!";
-            } else if (board.getPlayers() == 4) {
-                for (Player ps : players) {
-                    if (ps.getMarble() == p.getMarble().next(4).next(4)) {
-                        if (p.getPoints() + ps.getPoints() >= 6) {
-                            return "Team " + p.getName() + " & " + ps.getName() + " won!";
-                        }
-                    }
+        if (board.getPlayers() != 4 && getWinner() != null) {
+            return getWinner().getName() + " won!";
+        } else if (board.getPlayers() == 4 && getWinner() != null) {
+            for (Player ps : players) {
+                if (ps.getMarble() == getWinner().getMarble().next(4).next(4)) {
+                    return "Team " + getWinner().getName() + " & " + ps.getName() + " won!";
                 }
             }
         }

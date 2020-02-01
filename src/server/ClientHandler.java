@@ -165,6 +165,8 @@ public class ClientHandler implements Runnable {
                     for (ClientHandler ch : clientHandlers) {
                         ch.writeLine(result);
                     }
+                    inLobby = false;
+                    ready = false;
                 }
                 break;
             case ProtocolMessages.FORFEIT:

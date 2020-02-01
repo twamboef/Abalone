@@ -259,9 +259,6 @@ public class Server implements Runnable, ServerProtocol {
         ServerGame game = createGame(lobby);
         new Thread(game).start();
         games.add(game);
-        for (String p : lobby.getPlayers()) {
-            getClientHandler(p).unready();
-        }
         String result = ProtocolMessages.START + ProtocolMessages.DELIMITER;
         for (String p : lobby.getPlayers()) {
             result += p + ProtocolMessages.DELIMITER;
@@ -294,7 +291,6 @@ public class Server implements Runnable, ServerProtocol {
 
     @Override
     public String makeMove(String name, String move) {
-        System.out.println(getGame(name).getTurnCount());
         try {
             if (getGame(name) == null || !getGame(name).getCurrentPlayer().getName().equals(name)
                     || !getGame(name).getBoard().isValidMove(getGame(name).getCurrentPlayer(),
