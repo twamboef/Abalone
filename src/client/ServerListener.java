@@ -271,7 +271,11 @@ public class ServerListener implements Runnable {
                 }
                 break;
             case ProtocolMessages.FINISH:
-                tui.showMessage(((ServerGame) client.getGame()).getResult());
+                if (parm1 == null) {
+                    tui.showMessage("96 turns have passed. It's a draw!");
+                } else {
+                    tui.showMessage("(Team) " + parm1 + " won!");
+                }
                 tui.showMessage("\n\nPlease enter a command.");
                 tui.showMessage("For help, type HELP");
                 client.clearGame();

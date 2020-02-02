@@ -38,7 +38,11 @@ public class ClientHandler implements Runnable {
             this.sock = sock;
             this.server = server;
         } catch (IOException e) {
-            shutDown();
+            try {
+                shutDown();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -56,7 +60,11 @@ public class ClientHandler implements Runnable {
             }
             shutDown();
         } catch (IOException e) {
-            shutDown();
+            try {
+                shutDown();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -130,8 +138,9 @@ public class ClientHandler implements Runnable {
                         break;
                     }
                     try {
+                        result = server.startGame(lobby);
                         for (String p : lobby.getPlayers()) {
-                            server.getClientHandler(p).writeLine(server.startGame(lobby));
+                            server.getClientHandler(p).writeLine(result);
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -297,8 +306,29 @@ public class ClientHandler implements Runnable {
         return points;
     }
 
-    private void shutDown() {
+    private void shutDown() throws IOException {
         System.out.println("> [" + name + "] Shutting down.");
+        if (server.getGame(name) != null) {
+            List<ClientHandler> clientHandlers = new ArrayList<ClientHandler>();
+            for (String p : server.getLobby(name).getPlayers()) {
+                if (!p.equals(name)) {
+                    clientHandlers.add(server.getClientHandler(p));
+                }
+            }
+            String result = server.playerForfeit(name);
+            if (result.contains("200")) {
+                server.getGame(clientHandlers.get(0).getName()).playerForfeit(name);
+                for (ClientHandler ch : clientHandlers) {
+                    ch.writeLine(server.playerDefeat(name));
+                }
+                if (server.getGame(clientHandlers.get(0).getName()).gameOver()) {
+                    result = server.gameFinish(server.getGame(clientHandlers.get(0).getName()));
+                    for (ClientHandler ch : clientHandlers) {
+                        ch.writeLine(result);
+                    }
+                }
+            }
+        }
         try {
             in.close();
             out.close();
@@ -307,9 +337,6 @@ public class ClientHandler implements Runnable {
             e.printStackTrace();
         }
         server.leaveLobby(name);
-        if (server.getGame(name) != null) {
-            server.getGame(name).playerForfeit(name);
-        }
         server.removeClient(this);
     }
 }

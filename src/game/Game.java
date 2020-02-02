@@ -199,7 +199,7 @@ public class Game {
      */
     public Player getWinner() {
         for (Player p : players) {
-            if (board.getPlayers() != 4 && p.getPoints() >= 6) {
+            if (p.getPoints() >= 6) {
                 return p;
             } else if (board.getPlayers() == 4) {
                 for (Player ps : players) {
