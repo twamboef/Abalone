@@ -156,6 +156,7 @@ class ClientTest {
         outContent.reset();
         
         // Underlying tests could not be performed, since it produces a NullPointerException in makeMove of class Client
+        // This only happens in the test, not when using the client manually.
         // Because of that, FORFEIT is called.
         
         //        // Player sends invalid move. Expected: Forbidden (403)
