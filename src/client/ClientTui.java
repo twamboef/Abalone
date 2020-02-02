@@ -3,6 +3,7 @@ package client;
 import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
+import game.ComputerPlayer;
 import game.Direction;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class ClientTui implements ClientView {
             try {
                 String line;
                 handleUserInput((line = systemIn.readLine().toUpperCase()));
-                if (!line.equals("HELP") && !invalidCommand) {
+                if (!line.equals("HELP")  && !line.equals("HINT") && !invalidCommand) {
                     synchronized (ack) {
                         ack.wait();
                     }
@@ -79,6 +80,9 @@ public class ClientTui implements ClientView {
                 break;
             case ProtocolMessages.MOVE:
                 doMove();
+                break;
+            case "HINT":
+                getHint();
                 break;
             case ProtocolMessages.FORFEIT:
                 client.playerForfeit();
@@ -182,6 +186,19 @@ public class ClientTui implements ClientView {
         client.makeMove(getString("What is one of the outer marbles you want to move?") + ProtocolMessages.DELIMITER
                 + getString("What is the other outer marble you want to move?") + ProtocolMessages.DELIMITER
                 + getInt(sb.toString()));
+    }
+    
+    /**
+     * Gives the user a possible move.
+     */
+    public void getHint() {
+        if (client.getGame() == null) {
+            showMessage("You're not in a game");
+            return;
+        }
+        ComputerPlayer p = new ComputerPlayer(client.getName(), client.getGame().getCurrentPlayer().getMarble());
+        String move = p.determineMove(client.getGame().getBoard());
+        showMessage("You could do this move: " + move);
     }
 
     /**

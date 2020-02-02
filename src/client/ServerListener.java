@@ -202,6 +202,7 @@ public class ServerListener implements Runnable {
                         }
                     } else {
                         tui.showMessage("To make a move, type MOVE");
+                        tui.showMessage("To get a hint, type HINT");
                     }
                 } else {
                     tui.showMessage("Waiting until it's your turn...");
@@ -262,6 +263,7 @@ public class ServerListener implements Runnable {
                             }
                         } else {
                             tui.showMessage("To make a move, type MOVE");
+                            tui.showMessage("To get a hint, type HINT");
                         }
                     } else {
                         tui.showMessage("Waiting until it's your turn...");
