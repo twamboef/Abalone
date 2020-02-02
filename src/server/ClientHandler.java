@@ -75,7 +75,7 @@ public class ClientHandler implements Runnable {
         if (splitmsg.length > 3) {
             parm3 = splitmsg[3];
         }
-        if (connected == false && !command.equals("CONNECT")) {
+        if (!connected && !command.equals(ProtocolMessages.CONNECT)) {
             writeLine(
                     command + ProtocolMessages.DELIMITER + ProtocolMessages.UNAUTHORIZED + ProtocolMessages.DELIMITER);
             return;
@@ -90,8 +90,10 @@ public class ClientHandler implements Runnable {
                 writeLine(result);
                 break;
             case ProtocolMessages.CREATE:
-                writeLine(server.createLobby(parm1, name, parm2));
-                writeLine(server.lobbyChanged(server.getLobby(name)));
+                writeLine(result = server.createLobby(parm1, name, parm2));
+                if (result.contains("200")) {
+                    writeLine(server.lobbyChanged(server.getLobby(name)));
+                }
                 break;
             case ProtocolMessages.LISTL:
                 writeLine(server.getLobbyList());

@@ -17,11 +17,11 @@ import protocol.ProtocolMessages;
 import protocol.ServerProtocol;
 
 public class Server implements Runnable, ServerProtocol {
-    private ServerSocket ssock;
-    private List<ClientHandler> clients;
-    private List<Lobby> lobbies;
-    private List<ServerGame> games;
-    private ServerTui view;
+    protected ServerSocket ssock;
+    protected List<ClientHandler> clients;
+    protected List<Lobby> lobbies;
+    protected List<ServerGame> games;
+    protected ServerTui view;
     private int nextClientNo;
 
     /**

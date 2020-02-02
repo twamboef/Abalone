@@ -22,13 +22,13 @@ public class Client implements ClientProtocol {
 
     public Socket serverSocket;
     private Server server;
-    private BufferedWriter out;
-    private String name;
+    protected BufferedWriter out;
+    protected String name;
     public boolean connected = false;
     private Game currentGame = null;
 
-    private ServerListener sl;
-    private ClientTui tui;
+    protected ServerListener sl;
+    public ClientTui tui;
 
     public Client() throws IOException {
         tui = new ClientTui(this);
@@ -163,7 +163,6 @@ public class Client implements ClientProtocol {
         }
     }
 
-    // TODO
     @Override
     public void connect(String name) throws ProtocolException, ServerUnavailableException {
         sendMessage(ProtocolMessages.CONNECT + ProtocolMessages.DELIMITER + name + ProtocolMessages.DELIMITER);

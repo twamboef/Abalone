@@ -366,7 +366,7 @@ public class ServerListener implements Runnable {
                 }
                 break;
             default:
-                // do nothing if server sends invalid message
+                tui.showMessage("Not connected yet");
                 break;
         }
         synchronized (tui.ack) {
