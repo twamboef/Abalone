@@ -3,21 +3,18 @@ package tests;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-import client.Client;
 import client.TestClient;
 import exceptions.ExitProgram;
 import exceptions.ProtocolException;
 import exceptions.ServerUnavailableException;
-import protocol.ProtocolMessages;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import protocol.ProtocolMessages;
 import server.TestServer;
 
 class ClientTest {
@@ -66,7 +63,7 @@ class ClientTest {
                 + ProtocolMessages.DELIMITER + ProtocolMessages.SUCCESS));
         outContent.reset();
         
-     // Client who is not connected tries a command that is not ProtocolMessages.CONNECT.
+        // Client who is not connected tries a command that is not ProtocolMessages.CONNECT
         // Expected: Unauthorized (401)
         client2.tui.handleUserInput(ProtocolMessages.LISTP);
         TimeUnit.MILLISECONDS.sleep(10);
